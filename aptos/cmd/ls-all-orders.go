@@ -18,36 +18,25 @@ func GetListAllOrdersCmd() *cobra.Command {
 		Args:  cobra.NoArgs,
 	}
 
-	network := aptos.Mainnet
-	endpoint := ""
-	baseCoinStr := ""
-	quoteCoinStr := ""
-	var maxGasAmount uint64 = 200000
+	args := NewSharedArgsWithBaseQuoteCoins()
 
-	cmd.Flags().VarP(&network, "network", "n", "network for the market.")
-	cmd.Flags().StringVarP(&endpoint, "endpoint", "u", endpoint, "endpoint for the rest api, default to the one provided by aptos labs.")
-	cmd.Flags().Uint64VarP(&maxGasAmount, "max-gas-amount", "m", maxGasAmount, "max gas amount for the simulation.")
+	args.SetCmd(cmd)
 
-	cmd.Flags().StringVarP(&baseCoinStr, "base-coin", "b", baseCoinStr, "base coin for the market")
-	cmd.MarkFlagRequired("base-coin")
-	cmd.Flags().StringVarP(&quoteCoinStr, "quote-coin", "q", quoteCoinStr, "quote coin for the market")
-	cmd.MarkFlagRequired("quote-coin")
-
-	cmd.Run = func(cmd *cobra.Command, args []string) {
-		if endpoint == "" {
+	cmd.Run = func(*cobra.Command, []string) {
+		if args.endpoint == "" {
 			var err error
-			endpoint, _, err = aptos.GetDefaultEndpoint(network)
+			args.endpoint, _, err = aptos.GetDefaultEndpoint(args.network)
 			orPanic(err)
 		}
 
-		auxConfig := getOrPanic(aptos.GetAuxClientConfig(network))
+		auxConfig := getOrPanic(aptos.GetAuxClientConfig(args.network))
 
-		client := aptos.NewClient(endpoint)
+		client := aptos.NewClient(args.endpoint)
 
-		baseCoin := getOrPanic(parseCoinType(network, baseCoinStr))
-		quoteCoin := getOrPanic(parseCoinType(network, quoteCoinStr))
+		baseCoin := getOrPanic(parseCoinType(args.network, args.baseCoinStr))
+		quoteCoin := getOrPanic(parseCoinType(args.network, args.quoteCoinStr))
 
-		tx := auxConfig.BuildLoadAllOrdersIntoEvent(baseCoin, quoteCoin, aptos.TransactionOption_MaxGasAmount(maxGasAmount))
+		tx := auxConfig.BuildLoadAllOrdersIntoEvent(baseCoin, quoteCoin, aptos.TransactionOption_MaxGasAmount(args.maxGasAmount))
 
 		orPanic(client.FillTransactionData(context.Background(), tx, false))
 

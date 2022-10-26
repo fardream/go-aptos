@@ -18,36 +18,25 @@ func GetListL2MarketCmd() *cobra.Command {
 		Args:  cobra.NoArgs,
 	}
 
-	network := aptos.Mainnet
-	endpoint := ""
-	baseCoinStr := ""
-	quoteCoinStr := ""
-	var maxGasAmount uint64 = 200000
+	sharedArgs := NewSharedArgsWithBaseQuoteCoins()
 
-	cmd.Flags().VarP(&network, "network", "n", "network for the market.")
-	cmd.Flags().StringVarP(&endpoint, "endpoint", "u", endpoint, "endpoint for the rest api, default to the one provided by aptos labs.")
-	cmd.Flags().Uint64VarP(&maxGasAmount, "max-gas-amount", "m", maxGasAmount, "max gas amount for the simulation.")
-
-	cmd.Flags().StringVarP(&baseCoinStr, "base-coin", "b", baseCoinStr, "base coin for the market")
-	cmd.MarkFlagRequired("base-coin")
-	cmd.Flags().StringVarP(&quoteCoinStr, "quote-coin", "q", quoteCoinStr, "quote coin for the market")
-	cmd.MarkFlagRequired("quote-coin")
+	sharedArgs.SetCmd(cmd)
 
 	cmd.Run = func(cmd *cobra.Command, args []string) {
-		if endpoint == "" {
+		if sharedArgs.endpoint == "" {
 			var err error
-			endpoint, _, err = aptos.GetDefaultEndpoint(network)
+			sharedArgs.endpoint, _, err = aptos.GetDefaultEndpoint(sharedArgs.network)
 			orPanic(err)
 		}
 
-		auxConfig := getOrPanic(aptos.GetAuxClientConfig(network))
+		auxConfig := getOrPanic(aptos.GetAuxClientConfig(sharedArgs.network))
 
-		client := aptos.NewClient(endpoint)
+		client := aptos.NewClient(sharedArgs.endpoint)
 
-		baseCoin := getOrPanic(parseCoinType(network, baseCoinStr))
-		quoteCoin := getOrPanic(parseCoinType(network, quoteCoinStr))
+		baseCoin := getOrPanic(parseCoinType(sharedArgs.network, sharedArgs.baseCoinStr))
+		quoteCoin := getOrPanic(parseCoinType(sharedArgs.network, sharedArgs.quoteCoinStr))
 
-		tx := auxConfig.BuildLoadMarketIntoEvent(baseCoin, quoteCoin, aptos.TransactionOption_MaxGasAmount(maxGasAmount))
+		tx := auxConfig.BuildLoadMarketIntoEvent(baseCoin, quoteCoin, aptos.TransactionOption_MaxGasAmount(sharedArgs.maxGasAmount))
 
 		orPanic(client.FillTransactionData(context.Background(), tx, false))
 

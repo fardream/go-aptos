@@ -22,9 +22,11 @@ func GetKeyAndMnemonicCmd() *cobra.Command {
 
 	outputFile := ""
 	profile := ""
+	endpoint := ""
 	cmd.Flags().StringArrayVarP(&mnemonicCodes, "mnemonic", "m", mnemonicCodes, "mnemonic codes")
 	cmd.Flags().StringVarP(&outputFile, "output", "o", outputFile, "output the data into a configuration file. if the file already exists, it will be backed up")
 	cmd.Flags().StringVarP(&profile, "profile", "p", profile, "profile name in the configuration file")
+	cmd.Flags().StringVarP(&endpoint, "endpoint", "u", endpoint, "endpoint to set in output profile")
 	cmd.MarkFlagFilename("output", "yml", "yaml")
 	cmd.MarkFlagsRequiredTogether("output", "profile")
 
@@ -69,7 +71,16 @@ func GetKeyAndMnemonicCmd() *cobra.Command {
 				configs.Profiles = make(map[string]*aptos.Config)
 			}
 
-			config := &aptos.Config{}
+			restUrl, faucetUrl, _ := aptos.GetDefaultEndpoint(aptos.Network(profile))
+			if endpoint != "" {
+				restUrl = endpoint
+			}
+
+			if restUrl == "" {
+				redWarn.Printf("empty rest url!\n")
+			}
+
+			config := &aptos.Config{RestUrl: restUrl, FaucetUrl: faucetUrl}
 			config.SetKey(localAccount)
 			configs.Profiles[profile] = config
 

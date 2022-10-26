@@ -20,6 +20,7 @@ func GetRootCmd() *cobra.Command {
 		GetListL2MarketCmd(),
 		GetListAllOrdersCmd(),
 		GetPlaceClobOrderCmd(),
+		GetCreatePoolCmd(),
 	)
 
 	return cmd
