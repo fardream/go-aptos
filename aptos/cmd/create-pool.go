@@ -19,7 +19,7 @@ func GetCreatePoolCmd() *cobra.Command {
 The coin x/y can either be fully qualified types, or a short hand name like USDC.
 To see a list of all coins that are known, check "ls-known" command.
 
-If no fee bps is specified, it will be set to 0.
+If no fee bps is specified, it will be set to 30.
 
 ` + commonLongDescription
 	cmd := &cobra.Command{
