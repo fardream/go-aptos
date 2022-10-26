@@ -6,18 +6,21 @@ import (
 	"strings"
 )
 
+// EntryFunctionPayload
 type EntryFunctionPayload struct {
 	Type          string                `json:"type"`
-	Function      string                `json:"function"`
+	Function      *MoveFunctionTag      `json:"function"`
 	TypeArguments []*MoveTypeTag        `json:"type_arguments"`
 	Arguments     EntryFunctionArgSlice `json:"arguments"`
 }
 
+// EntryFunctionArg is argument to entry function
 type EntryFunctionArg interface {
 	ToBCS() []byte
 }
 
-func NewEntryFunctionPayload(functionName string, typeArguments []*MoveTypeTag, arguments []EntryFunctionArg) *EntryFunctionPayload {
+// NewEntryFunctionPayload
+func NewEntryFunctionPayload(functionName *MoveFunctionTag, typeArguments []*MoveTypeTag, arguments []EntryFunctionArg) *EntryFunctionPayload {
 	r := &EntryFunctionPayload{
 		Type:          "entry_function_payload",
 		Function:      functionName,
@@ -35,6 +38,7 @@ func NewEntryFunctionPayload(functionName string, typeArguments []*MoveTypeTag, 
 	return r
 }
 
+// EntryFunctionArg_Uint8 represents u8 in move, equivalent to a byte
 type EntryFunctionArg_Uint8 uint8
 
 var _ EntryFunctionArg = (*EntryFunctionArg_Uint8)(nil)
@@ -58,6 +62,7 @@ func (u EntryFunctionArg_Uint8) ToBCS() []byte {
 	return []byte{byte(u)}
 }
 
+// EntryFunctionArg_Uint64 is equivalent to uint64, or u64 in move.
 type EntryFunctionArg_Uint64 = JsonUint64
 
 type EntryFunctionArg_String string
@@ -65,10 +70,7 @@ type EntryFunctionArg_String string
 var _ EntryFunctionArg = (*EntryFunctionArg_String)(nil)
 
 func (s EntryFunctionArg_String) ToBCS() []byte {
-	stringBytes := []byte(string(s))
-
-	prefix := ULEB128Encode(len(s))
-	return append(prefix, stringBytes...)
+	return StringToBCS(string(s))
 }
 
 func (s EntryFunctionArg_String) MarshalJSON() ([]byte, error) {
@@ -86,6 +88,7 @@ func (s *EntryFunctionArg_String) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// EntryFunctionArg_Bool
 type EntryFunctionArg_Bool bool
 
 var _ EntryFunctionArg = (*EntryFunctionArg_Bool)(nil)
@@ -113,6 +116,16 @@ func (b *EntryFunctionArg_Bool) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// EntryFunctionArgSlice
+//
+//   - for json:
+//     Parsing json or bcs payload coming back from remote is difficult without knowning the type of the payload slice.
+//     This slice will first test if the value is an u64 or bool, then try to convert the value into a string.
+//     If the converted string has 0x prefix, it will try cast that into an address. If casting fails, it will keep it as string.
+//
+//   - for bcs:
+//     Instead of serialize each element in the slice, the element of entry function argument slice is prefixed with the length of the
+//     serialized bytes. For example, instead of serialize true to 01, serialize it to 0101.
 type EntryFunctionArgSlice []EntryFunctionArg
 
 var _ json.Unmarshaler = (*EntryFunctionArgSlice)(nil)
@@ -156,4 +169,39 @@ func (s *EntryFunctionArgSlice) UnmarshalJSON(data []byte) error {
 	*s = result
 
 	return nil
+}
+
+func (s EntryFunctionArgSlice) ToBCS() []byte {
+	r := ULEB128Encode(len(s))
+	for _, a := range s {
+		ab := a.ToBCS()
+		r = append(r, ULEB128Encode(len(ab))...)
+		r = append(r, ab...)
+	}
+
+	return r
+}
+
+type EntryFunctionArgVector[T EntryFunctionArg] []T
+
+func (v EntryFunctionArgVector[T]) ToBCS() []byte {
+	r := ULEB128Encode(len(v))
+	for _, x := range v {
+		r = append(r, x.ToBCS()...)
+	}
+
+	return r
+}
+
+func (f EntryFunctionPayload) ToBCS() []byte {
+	r := []byte{2}
+	r = append(r, f.Function.ToBCS()...)
+	r = append(r, ULEB128Encode(len(f.TypeArguments))...)
+	for _, t := range f.TypeArguments {
+		r = append(r, t.ToBCS()...)
+	}
+
+	r = append(r, f.Arguments.ToBCS()...)
+
+	return r
 }

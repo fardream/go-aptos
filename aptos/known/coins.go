@@ -1,3 +1,5 @@
+// Known coins, pools, markets included with the binary.
+// User doesn't need to specify the full type name for those.
 package known
 
 import (
@@ -11,10 +13,14 @@ import (
 //go:embed coins.json
 var data []byte
 
+// TokenType
 type TokenType struct {
 	Type *aptos.MoveTypeTag `json:"type"`
 }
 
+// HippoCoinRegistryEntry is the information contained in the hippo coin registry here
+// https://github.com/hippospace/aptos-coin-list/blob/main/typescript/src/requestList.ts
+// The link is unfortunately a typescript file so not as convenient as a json file.
 type HippoCoinRegistryEntry struct {
 	Name           string    `json:"name"`
 	Symbol         string    `json:"symbol"`
@@ -29,8 +35,8 @@ type HippoCoinRegistryEntry struct {
 type coinMap map[string]*HippoCoinRegistryEntry
 
 var (
-	coinByNetworkByTypeName map[aptos.Network]*coinMap
-	coinByNetworkBySymbol   map[aptos.Network]*coinMap
+	coinByNetworkByTypeName map[aptos.Network]*coinMap // map from network -> coin type string -> registry info
+	coinByNetworkBySymbol   map[aptos.Network]*coinMap // map from network -> symbol -> registry info.
 )
 
 func addCoins(
@@ -80,6 +86,7 @@ func generateFakeCoins(address aptos.Address) []*HippoCoinRegistryEntry {
 			Symbol:         fakeCoin.String(),
 			OfficialSymbol: fakeCoin.String(),
 			TokenType:      TokenType{Type: t},
+			Decimals:       aptos.GetAuxFakeCoinDecimal(fakeCoin),
 		})
 	}
 
@@ -122,6 +129,7 @@ func init() {
 	})
 }
 
+// GetCoinInfo returns the hippo coin registry information for a given type. If the coin is not in the registry, return nil.
 func GetCoinInfo(network aptos.Network, typeTag *aptos.MoveTypeTag) *HippoCoinRegistryEntry {
 	coinForNetwork, ok := coinByNetworkByTypeName[network]
 	if !ok {
@@ -136,6 +144,7 @@ func GetCoinInfo(network aptos.Network, typeTag *aptos.MoveTypeTag) *HippoCoinRe
 	return coinInfo
 }
 
+// GetCoinInfo returns the hippo coin registry information for a symbol. If the coin is not in the registry, return nil.
 func GetCoinInfoBySymbol(network aptos.Network, symbol string) *HippoCoinRegistryEntry {
 	coinForNetwork, ok := coinByNetworkBySymbol[network]
 	if !ok {
@@ -148,4 +157,8 @@ func GetCoinInfoBySymbol(network aptos.Network, symbol string) *HippoCoinRegistr
 	}
 
 	return coinInfo
+}
+
+func GetAllCoins() map[aptos.Network]*coinMap {
+	return coinByNetworkByTypeName
 }

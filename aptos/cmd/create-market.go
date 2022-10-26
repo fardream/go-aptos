@@ -2,10 +2,8 @@ package cmd
 
 import (
 	"context"
-	"encoding/hex"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/spf13/cobra"
@@ -14,9 +12,26 @@ import (
 )
 
 func GetCreateMarketCmd() *cobra.Command {
+	const longDescription = `Create a central limit order book on https://aux.exchange.
+
+The base/quote coins can either be fully qualified types, or a short hand name like USDC.
+To see a list of all coins that are known, check "ls-known" command.
+
+Tick size is specified in decimals of the quote coin. Lot size is specified in decimals of the base coin.
+Price of the market is specified as amount of quote coin per 1 unit of base coin.
+
+For example, on devnet test market, BTC has a decimal of 8 and USDC has a decimal of 6.
+- lot size is 0.01 BTC, and should be specified 1000000 (1 million).
+- tick size is 0.01 USDC, and should be specified 10000 (10 thousand)
+
+To buy 0.5 BTC at a price of 19000, price should be 19,000,000,000, and the quantity should be 50,000,000.
+
+` + commonLongDescription
+
 	cmd := &cobra.Command{
 		Use:   "create-market",
 		Short: "create new market on aux exchange",
+		Long:  longDescription,
 		Args:  cobra.NoArgs,
 	}
 
@@ -72,11 +87,9 @@ func GetCreateMarketCmd() *cobra.Command {
 			return
 		}
 
-		resp := getOrPanic(client.EncodeSubmission(context.Background(), &aptos.EncodeSubmissionRequest{
-			Transaction: tx,
-		}))
-
-		signature := getOrPanic(account.Sign(getOrPanic(hex.DecodeString(strings.TrimPrefix(string(*resp.Parsed), "0x")))))
+		chainId := getOrPanic(client.GetChainId(context.Background()))
+		signingData := aptos.EncodeTransaction(tx, chainId)
+		signature := getOrPanic(account.Sign(signingData))
 
 		spew.Dump(getOrPanic(client.SubmitTransaction(context.Background(), &aptos.SubmitTransactionRequest{
 			Transaction: tx,

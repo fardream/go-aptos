@@ -15,6 +15,7 @@ func GetListAllOrdersCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "ls-all-orders",
 		Short: "list all orders for clob",
+		Long:  "List all orders for the clob.\nThe base/quote coins can either be fully qualified types, or a short hand name like USDC.\nTo see a list of all coins that are known, check ls-known command." + commonLongDescription,
 		Args:  cobra.NoArgs,
 	}
 

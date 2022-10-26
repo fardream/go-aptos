@@ -176,10 +176,48 @@ type SimulateTransactionResponse []struct {
 	*TransactionInfo `json:",inline" url:"-"`
 }
 
-// WaitForTransaction
-func (client *Client) WaitForTransaction(ctx context.Context, txHash string) (string, error) {
+type TransactionWaitOption struct {
+	Scale       float64
+	InitialWait time.Duration
+
+	currentWait time.Duration
+}
+
+func NewTransactionWaitOption(scale float64, initialWait time.Duration) TransactionWaitOption {
+	return TransactionWaitOption{
+		Scale:       scale,
+		InitialWait: initialWait,
+		currentWait: initialWait,
+	}
+}
+
+func (w *TransactionWaitOption) Wait() <-chan time.Time {
+	if w.currentWait == 0 {
+		w.currentWait = w.InitialWait
+	}
+	if w.currentWait == 0 {
+		return nil
+	}
+
+	defer func() {
+		w.currentWait = time.Duration(float64(w.InitialWait) * w.Scale)
+	}()
+
+	return time.After(w.currentWait)
+}
+
+// WaitForTransaction by default the wait is exponentially backing off with a scale of 2 and initial wait of 1 second.
+func (client *Client) WaitForTransaction(ctx context.Context, txHash string, waitOptions ...TransactionWaitOption) (string, error) {
 	r := &GetTransactionByHashRequest{
 		Hash: txHash,
+	}
+
+	var waitOpt *TransactionWaitOption
+	if len(waitOptions) == 0 {
+		v := NewTransactionWaitOption(2, time.Second)
+		waitOpt = &v
+	} else {
+		waitOpt = &(waitOptions[0])
 	}
 
 waitLoop:
@@ -201,7 +239,7 @@ waitLoop:
 		select {
 		case <-ctx.Done():
 			return "", ctx.Err()
-		case <-time.After(5 * time.Second):
+		case <-waitOpt.Wait():
 		}
 	}
 }

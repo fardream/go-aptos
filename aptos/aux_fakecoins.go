@@ -35,11 +35,11 @@ func GetAuxFakeCoinType(moduleAddress Address, fakeCoin AuxFakeCoin) (*MoveTypeT
 		return nil, fmt.Errorf("unknown fake coin: %d", int(fakeCoin))
 	}
 
-	return &MoveTypeTag{
-		Address: moduleAddress,
-		Module:  "fake_coin",
-		Name:    fakeCoin.String(),
-	}, nil
+	return NewMoveTypeTag(
+		moduleAddress,
+		"fake_coin",
+		fakeCoin.String(),
+		nil)
 }
 
 // GetAuxFakeCoinCoinType returns the fake coin coin type - this is a coin as defined by the aptos framework.
@@ -48,11 +48,21 @@ func GetAuxFakeCoinCoinType(moduleAddress Address, fakeCoin AuxFakeCoin) (*MoveT
 	if err != nil {
 		return nil, err
 	}
-	return &MoveTypeTag{
-		Address: moduleAddress,
-		Module:  "fake_coin",
-		Name:    "FakeCoin",
+	return NewMoveTypeTag(
+		moduleAddress,
+		"fake_coin",
+		"FakeCoin",
+		[]*MoveTypeTag{coinType},
+	)
+}
 
-		GenericTypeParameters: []*MoveTypeTag{coinType},
-	}, nil
+func GetAuxFakeCoinDecimal(fakeCoin AuxFakeCoin) uint8 {
+	switch fakeCoin {
+	case AuxFakeCoin_BTC, AuxFakeCoin_ETH, AuxFakeCoin_SOL:
+		return 8
+	case AuxFakeCoin_USDC, AuxFakeCoin_USDT, AuxFakeCoin_AUX:
+		return 6
+	}
+
+	return 0
 }

@@ -1,3 +1,4 @@
+// contains commands that are supported by the aptos-aux cli.
 package cmd
 
 import "github.com/spf13/cobra"
@@ -23,6 +24,7 @@ func GetRootCmd() *cobra.Command {
 		GetCreatePoolCmd(),
 		GetUpdatePoolFeeCmd(),
 		GetCreateMarketCmd(),
+		GetListKnownCmd(),
 	)
 
 	return cmd

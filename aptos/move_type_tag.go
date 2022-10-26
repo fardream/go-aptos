@@ -7,6 +7,31 @@ import (
 	"strings"
 )
 
+//go:generate stringer -type MoveType -linecomment
+
+// MoveType
+// aptos right now supports the following types
+// - bool
+// - u8
+// - u64
+// - u128
+// - address
+// - signer
+// - vector
+// - struct
+type MoveType uint8
+
+const (
+	MoveType_Bool    MoveType = iota // move_type_bool
+	MoveType_Uint8                   // mvoe_type_u8
+	MoveType_Uint64                  // move_type_u64
+	MoveType_Uint128                 // move_type_u128
+	MoveType_Address                 // move_type_address
+	MoveType_Signer                  // move_type_signer
+	MoveType_Vector                  // move_type_vector
+	MoveType_Struct                  // move_type_struct
+)
+
 var (
 	identifierRegex  = regexp.MustCompile("^[A-z_][A-z-9_]+$")
 	whiteSpaceRegex  = regexp.MustCompile(`\s+`)
@@ -17,31 +42,52 @@ var (
 // address::module_name::TypeName
 // off-chain, the address is a 0x prefixed hex encoded string, but during move development there can be named addresses.
 type MoveTypeTag struct {
-	// Address of the type
-	Address Address
-	// Module of the type
-	Module string
+	MoveModuleTag
 	// Name of the type
 	Name string
 
 	GenericTypeParameters []*MoveTypeTag
 }
 
+func (t *MoveTypeTag) String() string {
+	genericListStr := ""
+	if len(t.GenericTypeParameters) > 0 {
+		genericListStr = fmt.Sprintf(
+			"<%s>",
+			strings.Join(
+				mapSlices(
+					t.GenericTypeParameters,
+					func(t *MoveTypeTag) string {
+						return t.String()
+					},
+				),
+				",",
+			),
+		)
+	}
+
+	return fmt.Sprintf("%s::%s::%s%s", t.Address.String(), t.Module, t.Name, genericListStr)
+}
+
 func NewMoveTypeTag(address Address, module string, name string, genericTypeParameters []*MoveTypeTag) (*MoveTypeTag, error) {
-	if !identifierRegex.MatchString(module) {
-		return nil, fmt.Errorf("%s is not valid module name", module)
+	moduleTag, err := NewMoveModuleTag(address, module)
+	if err != nil {
+		return nil, err
 	}
 	if !identifierRegex.MatchString(name) {
 		return nil, fmt.Errorf("%s is not type name", name)
 	}
 
 	return &MoveTypeTag{
-		Address: address,
-		Module:  module,
-		Name:    name,
+		MoveModuleTag: *moduleTag,
+		Name:          name,
 
 		GenericTypeParameters: genericTypeParameters,
 	}, nil
+}
+
+func MustNewMoveTypeTag(address Address, module, name string, genericTypeParameters []*MoveTypeTag) *MoveTypeTag {
+	return must(NewMoveTypeTag(address, module, name, genericTypeParameters))
 }
 
 func makeCanonicalSegment(input string) string {
@@ -151,26 +197,6 @@ func mapSlices[E ~[]TIn, TIn any, TOut any](input E, mapper func(TIn) TOut) []TO
 	return r
 }
 
-func (t *MoveTypeTag) String() string {
-	genericListStr := ""
-	if len(t.GenericTypeParameters) > 0 {
-		genericListStr = fmt.Sprintf(
-			"<%s>",
-			strings.Join(
-				mapSlices(
-					t.GenericTypeParameters,
-					func(t *MoveTypeTag) string {
-						return t.String()
-					},
-				),
-				",",
-			),
-		)
-	}
-
-	return fmt.Sprintf("%s::%s::%s%s", t.Address.String(), t.Module, t.Name, genericListStr)
-}
-
 var _ json.Marshaler = (*MoveTypeTag)(nil)
 
 func (t *MoveTypeTag) MarshalJSON() ([]byte, error) {
@@ -197,4 +223,17 @@ func (t *MoveTypeTag) Type() string {
 // Set is to support cobra value
 func (t *MoveTypeTag) Set(data string) error {
 	return parseMoveTypeTagInternal(data, t)
+}
+
+// ToBCS for MoveTypeTag.
+// Note move supports 8 types (see [MoveType]), therefore the first byte is 7, which is `MoveType_Struct`
+func (t *MoveTypeTag) ToBCS() []byte {
+	r := append([]byte{byte(MoveType_Struct)}, t.MoveModuleTag.ToBCS()...)
+	r = append(r, StringToBCS(t.Name)...)
+	r = append(r, ULEB128Encode(len(t.GenericTypeParameters))...)
+	for _, gt := range t.GenericTypeParameters {
+		r = append(r, gt.ToBCS()...)
+	}
+
+	return r
 }

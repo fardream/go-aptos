@@ -2,10 +2,9 @@ package cmd
 
 import (
 	"context"
-	"encoding/hex"
 	"fmt"
+	"math"
 	"os"
-	"strings"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/spf13/cobra"
@@ -14,10 +13,19 @@ import (
 )
 
 func GetPlaceClobOrderCmd() *cobra.Command {
+	const longDescription = `
+The base/quote coins can either be fully qualified types, or a short hand name like USDC.
+To see a list of all coins that are known, check "ls-known-coins" command.
+
+Price is quoted per unit of base in quote quantities. For example, if BTC has decimal of 8, and USDC has decimal of 6.
+To buy 0.5 BTC at a price of 19000 USDC, price should be 19,000,000,000, and the quantity should be 50,000,000.
+
+` + commonLongDescription
 	cmd := &cobra.Command{
 		Use:   "place-clob-order",
 		Short: "place an order on clob",
 		Args:  cobra.NoArgs,
+		Long:  "Place a limit order on central limit order book of https://aux.exchange\n" + longDescription,
 	}
 
 	args := NewSharedArgsWithBaseQuoteCoins()
@@ -34,11 +42,13 @@ func GetPlaceClobOrderCmd() *cobra.Command {
 		Use:   "buy",
 		Short: "buy on aux",
 		Args:  cobra.NoArgs,
+		Long:  "Buy on central limit order book of https://aux.exchange\n" + longDescription,
 	}
 
 	sellCmd := &cobra.Command{
 		Use:   "sell",
 		Short: "sell on aux",
+		Long:  "Sell on central limit order book of https://aux.exchange\n" + longDescription,
 		Args:  cobra.NoArgs,
 	}
 
@@ -73,7 +83,20 @@ func GetPlaceClobOrderCmd() *cobra.Command {
 			baseCoin := getOrPanic(parseCoinType(args.network, args.baseCoinStr))
 			quoteCoin := getOrPanic(parseCoinType(args.network, args.quoteCoinStr))
 
-			tx := auxConfig.BuildPlaceOrder(account.Address, isBid, baseCoin, quoteCoin, limitPrice, quantity, aptos.TransactionOption_MaxGasAmount(args.maxGasAmount))
+			tx := auxConfig.BuildPlaceOrder(
+				account.Address,
+				isBid,
+				baseCoin,
+				quoteCoin,
+				limitPrice,
+				quantity,
+				0,
+				aptos.AuxClobMarketOrderType_Limit,
+				0,
+				false,
+				math.MaxUint64,
+				aptos.AuxClobMarketSelfTradeType_CancelBoth,
+				aptos.TransactionOption_MaxGasAmount(args.maxGasAmount))
 			orPanic(client.FillTransactionData(context.Background(), tx, false))
 
 			if args.simulate {
@@ -87,11 +110,9 @@ func GetPlaceClobOrderCmd() *cobra.Command {
 				return
 			}
 
-			resp := getOrPanic(client.EncodeSubmission(context.Background(), &aptos.EncodeSubmissionRequest{
-				Transaction: tx,
-			}))
-
-			signature := getOrPanic(account.Sign(getOrPanic(hex.DecodeString(strings.TrimPrefix(string(*resp.Parsed), "0x")))))
+			chainId := getOrPanic(client.GetChainId(context.Background()))
+			signingData := aptos.EncodeTransaction(tx, chainId)
+			signature := getOrPanic(account.Sign(signingData))
 
 			spew.Dump(getOrPanic(client.SubmitTransaction(context.Background(), &aptos.SubmitTransactionRequest{
 				Transaction: tx,

@@ -11,7 +11,7 @@ import (
 
 const testUserMenmonic = "escape summer cupboard disagree coach mother permit sugar short excite road smoke"
 
-func TestClientEncodeSubmission(t *testing.T) {
+func TestClient_EncodeSubmission(t *testing.T) {
 	config, _ := aptos.GetAuxClientConfig(aptos.Devnet)
 	moduleAddress := config.Address
 	devnetClient := aptos.NewClient("https://fullnode.devnet.aptoslabs.com/v1")
@@ -33,14 +33,8 @@ func TestClientEncodeSubmission(t *testing.T) {
 		MaxGasAmount:            aptos.JsonUint64(20000),
 		SequenceNumber:          aptos.JsonUint64(0),
 		Payload: aptos.NewEntryFunctionPayload(
-			"0xea383dc2819210e6e427e66b2b6aa064435bf672dc4bdc55018049f0c361d01a::fake_coin::mint",
-			[]*aptos.MoveTypeTag{
-				{
-					Address: moduleAddress,
-					Module:  "fake_coin",
-					Name:    "USDC",
-				},
-			},
+			aptos.MustNewMoveFunctionTag(config.Address, "fake_coin", "mint"),
+			[]*aptos.MoveTypeTag{aptos.MustNewMoveTypeTag(moduleAddress, "fake_coin", "USDC", nil)},
 			[]aptos.EntryFunctionArg{aptos.JsonUint64(10000000000)},
 		),
 	}
@@ -69,6 +63,11 @@ func TestClientEncodeSubmission(t *testing.T) {
 
 	expected := "0xb5e97db07fa0bd0e5598aa3643a9bc6f6693bddc1a9fec9e674a461eaa00b1937d928500a7c0176468d16bd391c5b551bcea5c08394b19690ec8233fd464bcef000000000000000002ea383dc2819210e6e427e66b2b6aa064435bf672dc4bdc55018049f0c361d01a0966616b655f636f696e046d696e740107ea383dc2819210e6e427e66b2b6aa064435bf672dc4bdc55018049f0c361d01a0966616b655f636f696e045553444300010800e40b5402000000204e000000000000640000000000000000ae3e930700000022"
 	result := string(*r.Parsed)
+	if expected != result {
+		t.Fatalf("want: %s\ngot:%s\n", expected, result)
+	}
+
+	result = "0x" + hex.EncodeToString(aptos.EncodeTransaction(tx, 34))
 	if expected != result {
 		t.Fatalf("want: %s\ngot:%s\n", expected, result)
 	}

@@ -14,10 +14,19 @@ import (
 )
 
 func GetCreatePoolCmd() *cobra.Command {
+	const longDescription = `Create a constant product AMM on https://aux.exchange
+
+The coin x/y can either be fully qualified types, or a short hand name like USDC.
+To see a list of all coins that are known, check "ls-known" command.
+
+If no fee bps is specified, it will be set to 0.
+
+` + commonLongDescription
 	cmd := &cobra.Command{
 		Use:   "create-pool",
 		Short: "create a pool",
 		Args:  cobra.NoArgs,
+		Long:  longDescription,
 	}
 
 	coinX := ""

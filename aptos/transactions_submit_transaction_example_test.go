@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/hex"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -20,16 +21,14 @@ func ExampleClient_SubmitTransaction() {
 
 	var err error
 
-	fmt.Printf("private key: 0x%s\n", hex.EncodeToString(account.PrivateKey.Seed()))
-	fmt.Printf("address: %s\n", account.Address.String())
+	fmt.Fprintf(os.Stderr, "private key: 0x%s\n", hex.EncodeToString(account.PrivateKey.Seed()))
+	fmt.Fprintf(os.Stderr, "address: %s\n", account.Address.String())
 	auxConfig, _ := aptos.GetAuxClientConfig(network)
 
 	faucetTxes, err := aptos.RequestFromFaucet(context.Background(), faucetUrl, &account.Address, 1000000000)
 	if err != nil {
 		panic(err)
 	}
-
-	fmt.Printf("faucet tx: %s\n", faucetTxes)
 
 	client := aptos.NewClient(restUrl)
 
@@ -41,16 +40,15 @@ func ExampleClient_SubmitTransaction() {
 		if err != nil {
 			spew.Dump(err)
 		}
-		fmt.Printf("fauct tx type: %s\n", txType)
+		fmt.Fprintf(os.Stderr, "fauct tx type: %s\n", txType)
 	}
 
 	tx := aptos.Transaction{
 		Sender:                  account.Address,
 		ExpirationTimestampSecs: aptos.JsonUint64(time.Date(3000, 1, 1, 0, 0, 0, 0, time.UTC).Unix()),
-		Payload: aptos.NewEntryFunctionPayload(fmt.Sprintf("%s::%s::%s", auxConfig.Address.String(), "fake_coin", "mint"),
-			[]*aptos.MoveTypeTag{
-				{Address: auxConfig.Address, Module: "fake_coin", Name: "USDC"},
-			},
+		Payload: aptos.NewEntryFunctionPayload(
+			aptos.MustNewMoveFunctionTag(auxConfig.Address, "fake_coin", "mint"),
+			[]*aptos.MoveTypeTag{aptos.MustNewMoveTypeTag(auxConfig.Address, "fake_coin", "USDC", nil)},
 			[]aptos.EntryFunctionArg{aptos.JsonUint64(1000000000000)}),
 	}
 
@@ -79,15 +77,19 @@ func ExampleClient_SubmitTransaction() {
 		Signature:   *signature,
 	}
 	body, _ := request.Body()
-	fmt.Println(string(body))
+	fmt.Fprintln(os.Stderr, string(body))
 	resp, err := client.SubmitTransaction(context.Background(), request)
-
-	spew.Dump(resp)
-	spew.Dump(err)
-
 	if err != nil {
-		ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+		panic(err)
+	} else {
+		spew.Fdump(os.Stderr, resp)
+		ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 		defer cancel()
-		client.WaitForTransaction(ctx, resp.Parsed.Hash)
+		status, err := client.WaitForTransaction(ctx, resp.Parsed.Hash)
+		if err != nil {
+			panic(err)
+		} else {
+			fmt.Println(status)
+		}
 	}
 }

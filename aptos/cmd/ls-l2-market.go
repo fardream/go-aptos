@@ -15,6 +15,7 @@ func GetListL2MarketCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "ls-l2",
 		Short: "list level 2 market data",
+		Long:  "List level 2 market data (price and quantities).\n" + commonLongDescription,
 		Args:  cobra.NoArgs,
 	}
 

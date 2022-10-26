@@ -17,7 +17,7 @@ var (
 )
 
 func (i EntryFunctionArg_Uint128) MarshalJSON() ([]byte, error) {
-	return i.underlying.MarshalJSON()
+	return json.Marshal(i.underlying.String())
 }
 
 var maxU128 = (&big.Int{}).Lsh(big.NewInt(1), 64)
@@ -58,11 +58,13 @@ func NewEntryFunctionArg_Uint128(s string) (*EntryFunctionArg_Uint128, error) {
 }
 
 func (i EntryFunctionArg_Uint128) ToBCS() []byte {
+	r := make([]byte, 16)
 	bigEndianBytes := i.underlying.Bytes()
-	bigEndianBytes = bigEndianBytes[:8]
-	for j := 0; j < 4; j++ {
-		bigEndianBytes[j], bigEndianBytes[7-j] = bigEndianBytes[7-j], bigEndianBytes[j]
+	copy(r, bigEndianBytes)
+	n := len(bigEndianBytes)
+	for j := 0; j < n/2; j++ {
+		r[j], r[n-1-j] = r[n-1-j], r[j]
 	}
 
-	return bigEndianBytes
+	return r
 }

@@ -44,6 +44,10 @@ func ParseAddress(s string) (Address, error) {
 	return *((*Address)(result)), nil
 }
 
+func MustStringToAddress(s string) Address {
+	return must(ParseAddress(s))
+}
+
 // CalculateResourceAddress creates a new resource address from
 // the source address and seeds.
 func CalculateResourceAddress(sourceAddress Address, seed []byte) (Address, error) {

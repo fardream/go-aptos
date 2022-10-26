@@ -2,10 +2,8 @@ package cmd
 
 import (
 	"context"
-	"encoding/hex"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/spf13/cobra"
@@ -82,11 +80,9 @@ func GetUpdatePoolFeeCmd() *cobra.Command {
 			return
 		}
 
-		resp := getOrPanic(client.EncodeSubmission(context.Background(), &aptos.EncodeSubmissionRequest{
-			Transaction: tx,
-		}))
-
-		signature := getOrPanic(account.Sign(getOrPanic(hex.DecodeString(strings.TrimPrefix(string(*resp.Parsed), "0x")))))
+		chainId := getOrPanic(client.GetChainId(context.Background()))
+		signingData := aptos.EncodeTransaction(tx, chainId)
+		signature := getOrPanic(account.Sign(signingData))
 
 		spew.Dump(getOrPanic(client.SubmitTransaction(context.Background(), &aptos.SubmitTransactionRequest{
 			Transaction: tx,

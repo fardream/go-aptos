@@ -18,8 +18,6 @@ func RequestFromFaucet(ctx context.Context, faucetUrl string, address *Address, 
 
 	fullUrl := fmt.Sprintf("%s?address=%s&amount=%d", url, address.String(), amount)
 
-	fmt.Printf("requesting airdrop for %s from %s\n", address, fullUrl)
-
 	request, err := http.NewRequestWithContext(ctx, http.MethodPost, fullUrl, nil)
 	if err != nil {
 		return nil, err

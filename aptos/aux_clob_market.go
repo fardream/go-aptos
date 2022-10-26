@@ -1,5 +1,8 @@
 package aptos
 
+// AuxCritbit is a critbit tree, used to store order books.
+// It has better tail behavior when adding/removing large number of elements,
+// but on average performs worse than red/black tree.
 type AuxCritbit struct {
 	Entries  *TableWithLength `json:"entries,omitempty"`
 	MaxIndex JsonUint64       `json:"max_index"`
@@ -8,6 +11,7 @@ type AuxCritbit struct {
 	Tree     *TableWithLength `json:"tree"`
 }
 
+// AuxClobMarket contains two sided book of bids and asks.
 type AuxClobMarket struct {
 	Asks          *AuxCritbit `json:"asks,omitempty"`
 	Bids          *AuxCritbit `json:"bids,omitempty"`
@@ -21,6 +25,7 @@ type AuxClobMarket struct {
 	CancelEvents *EventHandler `json:"cancel_events"`
 }
 
+// AuxAmmPool is a constant product amm
 type AuxAmmPool struct {
 	FeeBps   JsonUint64 `json:"feebps"`
 	Frozen   bool       `json:"frozen"`
@@ -67,3 +72,27 @@ type AuxAllOrdersEvent struct {
 	Bids [][]*AuxOpenOrderEventInfo `json:"bids"`
 	Asks [][]*AuxOpenOrderEventInfo `json:"asks"`
 }
+
+//go:generate stringer -type AuxClobMarketSelfTradeType -linecomment
+
+// AuxClobMarketSelfTradeType gives instruction on how to handle self trade
+type AuxClobMarketSelfTradeType uint64
+
+const (
+	AuxClobMarketSelfTradeType_CancelPassive    AuxClobMarketSelfTradeType = iota + 200 // CANCEL_PASSIVE
+	AuxClobMarketSelfTradeType_CancelAggressive                                         // CANCEL_AGGRESSIVE
+	AuxClobMarketSelfTradeType_CancelBoth                                               // CANCEL_BOTH
+)
+
+//go:generate stringer -type AuxClobMarketOrderType -linecomment
+
+// AuxClobMarketOrderType, can be limit, fok, ioc, post only or passive join
+type AuxClobMarketOrderType uint64
+
+const (
+	AuxClobMarketOrderType_Limit        AuxClobMarketOrderType = iota + 100 // LIMIT
+	AuxClobMarketOrderType_FOK                                              // FOK
+	AuxClobMarketOrderType_IOC                                              // IOC
+	AuxClobMarketOrderType_POST_ONLY                                        // POST_ONLY
+	AuxClobMarketOrderType_PASSIVE_JOIN                                     // PASSIVE_JOIN
+)

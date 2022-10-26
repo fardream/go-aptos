@@ -5,6 +5,28 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const commonLongDescription = `Network and Profile
+
+Many commands accept a network argument and a profile argument. Network is one of the following:
+- localnet
+- devnet
+- testnet
+- mainnet
+
+aptos official cli store its global configuration (private key, public key, address, url for api etc)
+in $HOME/.aptos/config.yaml. Those configurations are called profiles.
+
+You can specify a profile to use with the --profile argument, however, if the profile is unset,
+the network name will be used.
+
+--simulate option will run the transaction in the simulation mode. This is useful to make sure the instruction is correct.
+The profile still needs to be configured properly, although private key is not necessary.
+
+--max-gas-amount can be used to adjust the gas. Note the aptos network requires the max gas amount * gas unit price to be
+available in the sending account even for simulations.
+`
+
+// SharedArgs for commands
 type SharedArgs struct {
 	network      aptos.Network
 	profile      string
