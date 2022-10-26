@@ -20,27 +20,11 @@ func GetPlaceClobOrderCmd() *cobra.Command {
 		Args:  cobra.NoArgs,
 	}
 
-	network := aptos.Devnet
-	profile := string(network)
-	endpoint := ""
-	baseCoinStr := ""
-	quoteCoinStr := ""
-	var maxGasAmount uint64 = 200000
-	simulate := false
-
+	args := NewSharedArgsWithBaseQuoteCoins()
+	args.SetCmd(cmd)
 	var limitPrice uint64 = 0
 	var quantity uint64 = 0
 
-	cmd.PersistentFlags().VarP(&network, "network", "n", "network for the market.")
-	cmd.PersistentFlags().StringVarP(&endpoint, "endpoint", "u", endpoint, "endpoint for the rest api, default to the one provided by aptos labs.")
-	cmd.PersistentFlags().Uint64VarP(&maxGasAmount, "max-gas-amount", "m", maxGasAmount, "max gas amount for the simulation.")
-	cmd.PersistentFlags().StringVarP(&profile, "profile", "k", profile, "aptos profile to use")
-	cmd.PersistentFlags().BoolVarP(&simulate, "simulate", "s", simulate, "simulate the transaction")
-
-	cmd.PersistentFlags().StringVarP(&baseCoinStr, "base-coin", "b", baseCoinStr, "base coin for the market")
-	cmd.MarkPersistentFlagRequired("base-coin")
-	cmd.PersistentFlags().StringVarP(&quoteCoinStr, "quote-coin", "q", quoteCoinStr, "quote coin for the market")
-	cmd.MarkPersistentFlagRequired("quote-coin")
 	cmd.PersistentFlags().Uint64VarP(&limitPrice, "limit-price", "p", limitPrice, "limit price")
 	cmd.MarkPersistentFlagRequired("limit-price")
 	cmd.PersistentFlags().Uint64VarP(&quantity, "quantity", "t", quantity, "quantity")
@@ -61,37 +45,38 @@ func GetPlaceClobOrderCmd() *cobra.Command {
 	buildCmd := func(isBuy bool) func(*cobra.Command, []string) {
 		isBid := isBuy
 		return func(c *cobra.Command, s []string) {
+			args.UpdateProfileForCmd(c)
 			configFile, _ := getConfigFileLocation()
 			configs := getOrPanic(aptos.ParseAptosConfigFile(getOrPanic(os.ReadFile(configFile))))
 			if configs.Profiles == nil {
 				orPanic(fmt.Errorf("empty configuration at %s", configFile))
 			}
-			config, ok := configs.Profiles[profile]
+			config, ok := configs.Profiles[args.profile]
 			if !ok {
-				orPanic(fmt.Errorf("cannot find profile %s in config file %s", profile, configFile))
+				orPanic(fmt.Errorf("cannot find profile %s in config file %s", args.profile, configFile))
 			}
 
-			if endpoint == "" && config.RestUrl != "" {
-				endpoint = config.RestUrl
+			if args.endpoint == "" && config.RestUrl != "" {
+				args.endpoint = config.RestUrl
 			}
-			if endpoint == "" {
+			if args.endpoint == "" {
 				var err error
-				endpoint, _, err = aptos.GetDefaultEndpoint(network)
+				args.endpoint, _, err = aptos.GetDefaultEndpoint(args.network)
 				orPanic(err)
 			}
 			account := getOrPanic(config.GetLocalAccount())
 
-			auxConfig := getOrPanic(aptos.GetAuxClientConfig(network))
+			auxConfig := getOrPanic(aptos.GetAuxClientConfig(args.network))
 
-			client := aptos.NewClient(endpoint)
+			client := aptos.NewClient(args.endpoint)
 
-			baseCoin := getOrPanic(parseCoinType(network, baseCoinStr))
-			quoteCoin := getOrPanic(parseCoinType(network, quoteCoinStr))
+			baseCoin := getOrPanic(parseCoinType(args.network, args.baseCoinStr))
+			quoteCoin := getOrPanic(parseCoinType(args.network, args.quoteCoinStr))
 
-			tx := auxConfig.BuildPlaceOrder(account.Address, isBid, baseCoin, quoteCoin, limitPrice, quantity, aptos.TransactionOption_MaxGasAmount(maxGasAmount))
+			tx := auxConfig.BuildPlaceOrder(account.Address, isBid, baseCoin, quoteCoin, limitPrice, quantity, aptos.TransactionOption_MaxGasAmount(args.maxGasAmount))
 			orPanic(client.FillTransactionData(context.Background(), tx, false))
 
-			if simulate {
+			if args.simulate {
 				resp := getOrPanic(
 					client.SimulateTransaction(context.Background(), &aptos.SimulateTransactionRequest{
 						Transaction: tx,

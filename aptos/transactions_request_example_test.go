@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/fardream/go-aptos/aptos"
 	"github.com/davecgh/go-spew/spew"
+	"github.com/fardream/go-aptos/aptos"
 )
 
 const network = aptos.Devnet
@@ -51,7 +51,7 @@ func ExampleClient_SubmitTransaction() {
 			[]*aptos.MoveTypeTag{
 				{Address: auxConfig.Address, Module: "fake_coin", Name: "USDC"},
 			},
-			[]aptos.EntryFunctionArg{"1000000000000"}),
+			[]aptos.EntryFunctionArg{aptos.JsonUint64(1000000000000)}),
 	}
 
 	if err := client.FillTransactionData(context.Background(), &tx, false); err != nil {

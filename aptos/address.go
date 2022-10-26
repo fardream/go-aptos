@@ -113,3 +113,9 @@ func (a *Address) Set(s string) error {
 func (a Address) Type() string {
 	return "aptos-address"
 }
+
+var _ EntryFunctionArg = (*Address)(nil)
+
+func (a Address) ToBCS() []byte {
+	return a[:]
+}

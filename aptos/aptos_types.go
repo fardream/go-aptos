@@ -27,33 +27,6 @@ type Coin struct {
 	Value JsonUint64 `json:"value"`
 }
 
-type EntryFunctionPayload struct {
-	Type          string             `json:"type"`
-	Function      string             `json:"function"`
-	TypeArguments []*MoveTypeTag     `json:"type_arguments"`
-	Arguments     []EntryFunctionArg `json:"arguments"`
-}
-
-type EntryFunctionArg interface{}
-
-func NewEntryFunctionPayload(functionName string, typeArguments []*MoveTypeTag, arguments []EntryFunctionArg) *EntryFunctionPayload {
-	r := &EntryFunctionPayload{
-		Type:          "entry_function_payload",
-		Function:      functionName,
-		TypeArguments: typeArguments,
-		Arguments:     arguments,
-	}
-
-	if r.TypeArguments == nil {
-		r.TypeArguments = make([]*MoveTypeTag, 0)
-	}
-	if r.Arguments == nil {
-		r.Arguments = make([]EntryFunctionArg, 0)
-	}
-
-	return r
-}
-
 var AptosStdAddress Address
 
 func init() {

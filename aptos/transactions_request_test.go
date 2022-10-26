@@ -41,7 +41,7 @@ func TestClientEncodeSubmission(t *testing.T) {
 					Name:    "USDC",
 				},
 			},
-			[]aptos.EntryFunctionArg{"10000000000"},
+			[]aptos.EntryFunctionArg{aptos.JsonUint64(10000000000)},
 		),
 	}
 

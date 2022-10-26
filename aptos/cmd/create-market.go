@@ -13,36 +13,29 @@ import (
 	"github.com/fardream/go-aptos/aptos"
 )
 
-func GetCreatePoolCmd() *cobra.Command {
+func GetCreateMarketCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "create-pool",
-		Short: "create a pool",
+		Use:   "create-market",
+		Short: "create new market on aux exchange",
 		Args:  cobra.NoArgs,
 	}
 
-	coinX := ""
-	coinY := ""
-
-	var feeBps uint64 = 30
-
-	args := NewSharedArgs()
+	args := NewSharedArgsWithBaseQuoteCoins()
 	args.SetCmd(cmd)
 
-	cmd.PersistentFlags().StringVarP(&coinX, "coin-x", "x", coinX, "x coin for the amm")
-	cmd.MarkPersistentFlagRequired("coin-x")
-	cmd.PersistentFlags().StringVarP(&coinY, "coin-y", "y", coinY, "x coin for the amm")
-	cmd.MarkPersistentFlagRequired("coin-y")
-	cmd.PersistentFlags().Uint64VarP(&feeBps, "fee-bps", "f", feeBps, "fee in bps")
+	var lotSize, tickSize uint64
+	cmd.PersistentFlags().Uint64Var(&lotSize, "lot-size", lotSize, "lot size")
+	cmd.MarkPersistentFlagRequired("lot-size")
+	cmd.PersistentFlags().Uint64Var(&tickSize, "tick-size", tickSize, "tick size")
+	cmd.MarkPersistentFlagRequired("tick-size")
 
 	cmd.Run = func(*cobra.Command, []string) {
 		args.UpdateProfileForCmd(cmd)
-
 		configFile, _ := getConfigFileLocation()
 		configs := getOrPanic(aptos.ParseAptosConfigFile(getOrPanic(os.ReadFile(configFile))))
 		if configs.Profiles == nil {
 			orPanic(fmt.Errorf("empty configuration at %s", configFile))
 		}
-
 		config, ok := configs.Profiles[args.profile]
 		if !ok {
 			orPanic(fmt.Errorf("cannot find profile %s in config file %s", args.profile, configFile))
@@ -62,11 +55,10 @@ func GetCreatePoolCmd() *cobra.Command {
 
 		client := aptos.NewClient(args.endpoint)
 
-		baseCoin := getOrPanic(parseCoinType(args.network, coinX))
-		quoteCoin := getOrPanic(parseCoinType(args.network, coinY))
+		baseCoin := getOrPanic(parseCoinType(args.network, args.baseCoinStr))
+		quoteCoin := getOrPanic(parseCoinType(args.network, args.quoteCoinStr))
 
-		tx := auxConfig.BuildCreatePool(account.Address, baseCoin, quoteCoin, feeBps, aptos.TransactionOption_MaxGasAmount(args.maxGasAmount))
-
+		tx := auxConfig.BuildCreateMarket(account.Address, baseCoin, quoteCoin, lotSize, tickSize, aptos.TransactionOption_MaxGasAmount(args.maxGasAmount))
 		orPanic(client.FillTransactionData(context.Background(), tx, false))
 
 		if args.simulate {
