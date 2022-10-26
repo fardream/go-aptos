@@ -21,6 +21,7 @@ func GetRootCmd() *cobra.Command {
 		GetListAllOrdersCmd(),
 		GetPlaceClobOrderCmd(),
 		GetCreatePoolCmd(),
+		GetUpdatePoolFeeCmd(),
 	)
 
 	return cmd

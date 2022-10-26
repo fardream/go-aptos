@@ -94,3 +94,24 @@ func (info *AuxClientConfig) BuildCreatePool(sender Address, coinX, coinY *MoveT
 
 	return tx
 }
+
+func (info *AuxClientConfig) BuildUpdatePoolFee(sender Address, coinX, coinY *MoveTypeTag, feeBps uint64, options ...TransactionOption) *Transaction {
+	functionName := fmt.Sprintf("%s::amm::update_fee", info.Address.String())
+	playload := NewEntryFunctionPayload(
+		functionName,
+		[]*MoveTypeTag{coinX, coinY},
+		[]EntryFunctionArg{
+			fmt.Sprintf("%d", feeBps),
+		},
+	)
+
+	tx := &Transaction{Payload: playload}
+
+	ApplyTransactionOptions(tx)
+
+	if tx.Sender.IsZero() {
+		tx.Sender = sender
+	}
+
+	return tx
+}
