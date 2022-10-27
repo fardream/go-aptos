@@ -23,19 +23,7 @@ type EventHandler struct {
 	} `json:"guid"`
 }
 
-type Coin struct {
-	Value JsonUint64 `json:"value"`
-}
-
-var AptosStdAddress Address
-
-func init() {
-	var err error
-	AptosStdAddress, err = ParseAddress("0x1")
-	if err != nil {
-		panic(err)
-	}
-}
+var AptosStdAddress = MustParseAddress("0x1")
 
 // LedgerInfo contains basic information about the chain.
 type LedgerInfo struct {

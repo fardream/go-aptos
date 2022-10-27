@@ -83,7 +83,7 @@ To buy 0.5 BTC at a price of 19000 USDC, price should be 19,000,000,000, and the
 			baseCoin := getOrPanic(parseCoinType(args.network, args.baseCoinStr))
 			quoteCoin := getOrPanic(parseCoinType(args.network, args.quoteCoinStr))
 
-			tx := auxConfig.BuildPlaceOrder(
+			tx := auxConfig.ClobMarket_PlaceOrder(
 				account.Address,
 				isBid,
 				baseCoin,

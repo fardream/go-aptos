@@ -29,10 +29,7 @@ func TestCalculateResourceAddress(t *testing.T) {
 		t.Fatalf("failed to parse address: %s", resAddrString)
 	}
 	seed := []byte("test")
-	resAddr, err := aptos.CalculateResourceAddress(sourceAddrExpected, seed)
-	if err != nil {
-		t.Fatalf("failed to calculate resource acount: %v", err)
-	}
+	resAddr := aptos.CalculateResourceAddress(sourceAddrExpected, seed)
 	if !bytes.Equal(resAddr[:], resAddrExpected[:]) {
 		t.Fatalf("resource address calculated is not expected: %v expecting: %v", resAddr, resAddrExpected)
 	}

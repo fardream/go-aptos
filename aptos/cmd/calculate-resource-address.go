@@ -41,10 +41,7 @@ func GetCalculateResourceAddressCmd() *cobra.Command {
 		if err != nil {
 			panic(err)
 		}
-		resourceAddr, err := aptos.CalculateResourceAddress(addr, ([]byte)(seed))
-		if err != nil {
-			panic(err)
-		}
+		resourceAddr := aptos.CalculateResourceAddress(addr, ([]byte)(seed))
 		fmt.Printf("resource address: 0x%s\n", hex.EncodeToString(resourceAddr[:]))
 	}
 

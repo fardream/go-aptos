@@ -44,16 +44,16 @@ func ParseAddress(s string) (Address, error) {
 	return *((*Address)(result)), nil
 }
 
-func MustStringToAddress(s string) Address {
+func MustParseAddress(s string) Address {
 	return must(ParseAddress(s))
 }
 
 // CalculateResourceAddress creates a new resource address from
 // the source address and seeds.
-func CalculateResourceAddress(sourceAddress Address, seed []byte) (Address, error) {
+func CalculateResourceAddress(sourceAddress Address, seed []byte) Address {
 	allbytes := append(sourceAddress[:], seed...)
 	allbytes = append(allbytes, byte(255))
-	return sha3.Sum256(allbytes), nil
+	return sha3.Sum256(allbytes)
 }
 
 // Hex representation of the address, with 0x prefix

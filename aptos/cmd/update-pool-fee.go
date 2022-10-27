@@ -65,7 +65,7 @@ func GetUpdatePoolFeeCmd() *cobra.Command {
 		baseCoin := getOrPanic(parseCoinType(args.network, coinX))
 		quoteCoin := getOrPanic(parseCoinType(args.network, coinY))
 
-		tx := auxConfig.BuildUpdatePoolFee(account.Address, baseCoin, quoteCoin, feeBps, aptos.TransactionOption_MaxGasAmount(args.maxGasAmount))
+		tx := auxConfig.Amm_UpdateFee(account.Address, baseCoin, quoteCoin, feeBps, aptos.TransactionOption_MaxGasAmount(args.maxGasAmount))
 
 		orPanic(client.FillTransactionData(context.Background(), tx, false))
 

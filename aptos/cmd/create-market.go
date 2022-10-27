@@ -73,7 +73,7 @@ To buy 0.5 BTC at a price of 19000, price should be 19,000,000,000, and the quan
 		baseCoin := getOrPanic(parseCoinType(args.network, args.baseCoinStr))
 		quoteCoin := getOrPanic(parseCoinType(args.network, args.quoteCoinStr))
 
-		tx := auxConfig.BuildCreateMarket(account.Address, baseCoin, quoteCoin, lotSize, tickSize, aptos.TransactionOption_MaxGasAmount(args.maxGasAmount))
+		tx := auxConfig.ClobMarket_CreateMarket(account.Address, baseCoin, quoteCoin, lotSize, tickSize, aptos.TransactionOption_MaxGasAmount(args.maxGasAmount))
 		orPanic(client.FillTransactionData(context.Background(), tx, false))
 
 		if args.simulate {

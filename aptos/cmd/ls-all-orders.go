@@ -37,7 +37,7 @@ func GetListAllOrdersCmd() *cobra.Command {
 		baseCoin := getOrPanic(parseCoinType(args.network, args.baseCoinStr))
 		quoteCoin := getOrPanic(parseCoinType(args.network, args.quoteCoinStr))
 
-		tx := auxConfig.BuildLoadAllOrdersIntoEvent(baseCoin, quoteCoin, aptos.TransactionOption_MaxGasAmount(args.maxGasAmount))
+		tx := auxConfig.ClobMarket_LoadAllOrdersIntoEvent(baseCoin, quoteCoin, aptos.TransactionOption_MaxGasAmount(args.maxGasAmount))
 
 		orPanic(client.FillTransactionData(context.Background(), tx, false))
 

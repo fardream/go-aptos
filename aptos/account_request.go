@@ -81,9 +81,9 @@ func (client *Client) GetAccountResource(ctx context.Context, request *GetAccoun
 type GetAccountResourceRequest struct {
 	GetRequest
 
-	Address       Address `url:"-"`
-	LedgerVersion *uint64 `url:"ledger_version,omitempty"`
-	Type          *MoveTypeTag
+	Address       Address      `url:"-"`
+	LedgerVersion *JsonUint64  `url:"ledger_version,omitempty"`
+	Type          *MoveTypeTag `url:"-"`
 }
 
 func (r *GetAccountResourceRequest) PathSegments() ([]string, error) {
@@ -95,9 +95,34 @@ func (r *GetAccountResourceRequest) PathSegments() ([]string, error) {
 		return nil, fmt.Errorf("missing type information")
 	}
 
-	return []string{"account", r.Address.String(), "resource", url.PathEscape(r.Type.String())}, nil
+	return []string{"accounts", r.Address.String(), "resource", url.PathEscape(r.Type.String())}, nil
 }
 
 type GetAccountResourceResponse struct {
 	*AccountResource `json:",inline"`
+}
+
+// GetAccountResourceWithType get the resource of specified move type, then marshal it into requested type T
+func GetAccountResourceWithType[T any](ctx context.Context, client *Client, address Address, moveType *MoveTypeTag, ledgerVersion uint64) (*T, error) {
+	request := &GetAccountResourceRequest{
+		Address: address,
+		Type:    moveType,
+	}
+	if ledgerVersion > 0 {
+		request.LedgerVersion = new(JsonUint64)
+		*(request.LedgerVersion) = JsonUint64(ledgerVersion)
+	}
+
+	resp, err := client.GetAccountResource(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+
+	result := new(T)
+
+	if err := json.Unmarshal(resp.Parsed.Data, result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }

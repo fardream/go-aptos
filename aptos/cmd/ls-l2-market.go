@@ -37,7 +37,7 @@ func GetListL2MarketCmd() *cobra.Command {
 		baseCoin := getOrPanic(parseCoinType(sharedArgs.network, sharedArgs.baseCoinStr))
 		quoteCoin := getOrPanic(parseCoinType(sharedArgs.network, sharedArgs.quoteCoinStr))
 
-		tx := auxConfig.BuildLoadMarketIntoEvent(baseCoin, quoteCoin, aptos.TransactionOption_MaxGasAmount(sharedArgs.maxGasAmount))
+		tx := auxConfig.ClobMarket_LoadMarketIntoEvent(baseCoin, quoteCoin, aptos.TransactionOption_MaxGasAmount(sharedArgs.maxGasAmount))
 
 		orPanic(client.FillTransactionData(context.Background(), tx, false))
 

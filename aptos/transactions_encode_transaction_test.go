@@ -22,7 +22,7 @@ func TestEncodeTransaction(t *testing.T) {
 	expiry := aptos.TransactionOption_ExpireAt(time.Date(3000, 1, 1, 0, 0, 0, 0, time.UTC))
 	maxGas := aptos.TransactionOption_MaxGasAmount(345678)
 	gasUnitPrice := aptos.TransactionOption_GasUnitPrice(111)
-	tx := auxConfig.BuildPlaceOrder(auxConfig.DataFeedAddress, true, eth, btc, 30, 90, 1, aptos.AuxClobMarketOrderType_FOK, 1, false,
+	tx := auxConfig.ClobMarket_PlaceOrder(auxConfig.DataFeedAddress, true, eth, btc, 30, 90, 1, aptos.AuxClobMarketOrderType_FOK, 1, false,
 		math.MaxUint64-5000000, aptos.AuxClobMarketSelfTradeType_CancelBoth, seqnum, expiry, maxGas, gasUnitPrice)
 	jsonPayload, _ := json.MarshalIndent(tx, "", "  ")
 	t.Logf("tx:\n%s\n", string(jsonPayload))

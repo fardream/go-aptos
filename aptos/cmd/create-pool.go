@@ -74,7 +74,7 @@ If no fee bps is specified, it will be set to 30.
 		baseCoin := getOrPanic(parseCoinType(args.network, coinX))
 		quoteCoin := getOrPanic(parseCoinType(args.network, coinY))
 
-		tx := auxConfig.BuildCreatePool(account.Address, baseCoin, quoteCoin, feeBps, aptos.TransactionOption_MaxGasAmount(args.maxGasAmount))
+		tx := auxConfig.Amm_CreatePool(account.Address, baseCoin, quoteCoin, feeBps, aptos.TransactionOption_MaxGasAmount(args.maxGasAmount))
 
 		orPanic(client.FillTransactionData(context.Background(), tx, false))
 
