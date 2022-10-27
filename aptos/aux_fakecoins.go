@@ -37,7 +37,7 @@ func GetAuxFakeCoinType(moduleAddress Address, fakeCoin AuxFakeCoin) (*MoveTypeT
 
 	return NewMoveTypeTag(
 		moduleAddress,
-		"fake_coin",
+		AuxFakeCoinModuleName,
 		fakeCoin.String(),
 		nil)
 }
@@ -50,12 +50,13 @@ func GetAuxFakeCoinCoinType(moduleAddress Address, fakeCoin AuxFakeCoin) (*MoveT
 	}
 	return NewMoveTypeTag(
 		moduleAddress,
-		"fake_coin",
+		AuxFakeCoinModuleName,
 		"FakeCoin",
 		[]*MoveTypeTag{coinType},
 	)
 }
 
+// GetAuxFakeCoinDecimal provides the decimals for fake coins
 func GetAuxFakeCoinDecimal(fakeCoin AuxFakeCoin) uint8 {
 	switch fakeCoin {
 	case AuxFakeCoin_BTC, AuxFakeCoin_ETH, AuxFakeCoin_SOL:
@@ -65,4 +66,89 @@ func GetAuxFakeCoinDecimal(fakeCoin AuxFakeCoin) uint8 {
 	}
 
 	return 0
+}
+
+const AuxFakeCoinModuleName = "fake_coin"
+
+func (info *AuxClientConfig) FakeCoin_RegisterAndMint(sender Address, fakeCoin AuxFakeCoin, amount uint64, options ...TransactionOption) *Transaction {
+	function := MustNewMoveFunctionTag(info.Address, AuxFakeCoinModuleName, "register_and_mint")
+
+	tx := &Transaction{
+		Payload: NewEntryFunctionPayload(
+			function,
+			[]*MoveTypeTag{
+				must(GetAuxFakeCoinType(info.Address, fakeCoin)),
+			},
+			[]EntryFunctionArg{
+				JsonUint64(amount),
+			}),
+	}
+
+	ApplyTransactionOptions(tx, options...)
+
+	tx.Sender = sender
+
+	return tx
+}
+
+func (info *AuxClientConfig) FakeCoin_Register(sender Address, fakeCoin AuxFakeCoin, options ...TransactionOption) *Transaction {
+	function := MustNewMoveFunctionTag(info.Address, AuxFakeCoinModuleName, "register")
+
+	tx := &Transaction{
+		Payload: NewEntryFunctionPayload(
+			function,
+			[]*MoveTypeTag{
+				must(GetAuxFakeCoinType(info.Address, fakeCoin)),
+			},
+			nil,
+		),
+	}
+
+	ApplyTransactionOptions(tx, options...)
+
+	tx.Sender = sender
+
+	return tx
+}
+
+func (info *AuxClientConfig) FakeCoin_Mint(sender Address, fakeCoin AuxFakeCoin, amount uint64, options ...TransactionOption) *Transaction {
+	function := MustNewMoveFunctionTag(info.Address, AuxFakeCoinModuleName, "mint")
+
+	tx := &Transaction{
+		Payload: NewEntryFunctionPayload(
+			function,
+			[]*MoveTypeTag{
+				must(GetAuxFakeCoinType(info.Address, fakeCoin)),
+			},
+			[]EntryFunctionArg{
+				JsonUint64(amount),
+			}),
+	}
+
+	ApplyTransactionOptions(tx, options...)
+
+	tx.Sender = sender
+
+	return tx
+}
+
+func (info *AuxClientConfig) FakeCoin_Burn(sender Address, fakeCoin AuxFakeCoin, amount uint64, options ...TransactionOption) *Transaction {
+	function := MustNewMoveFunctionTag(info.Address, AuxFakeCoinModuleName, "burn")
+
+	tx := &Transaction{
+		Payload: NewEntryFunctionPayload(
+			function,
+			[]*MoveTypeTag{
+				must(GetAuxFakeCoinType(info.Address, fakeCoin)),
+			},
+			[]EntryFunctionArg{
+				JsonUint64(amount),
+			}),
+	}
+
+	ApplyTransactionOptions(tx, options...)
+
+	tx.Sender = sender
+
+	return tx
 }

@@ -122,9 +122,7 @@ func (info *AuxClientConfig) ClobMarket_PlaceOrder(
 
 	ApplyTransactionOptions(tx, options...)
 
-	if tx.Sender.IsZero() {
-		tx.Sender = sender
-	}
+	tx.Sender = sender
 
 	return tx
 }
@@ -186,9 +184,24 @@ func (info *AuxClientConfig) ClobMarket_CreateMarket(sender Address, baseCoin, q
 
 	ApplyTransactionOptions(tx, options...)
 
-	if tx.Sender.IsZero() {
-		tx.Sender = sender
-	}
+	tx.Sender = sender
+
+	return tx
+}
+
+func (info *AuxClientConfig) ClobMarket_CancelAll(sender Address, baseCoin, quoteCoin *MoveTypeTag, options ...TransactionOption) *Transaction {
+	function := MustNewMoveFunctionTag(info.Address, AuxClobMarketModuleName, "cancel_all")
+	payload := NewEntryFunctionPayload(
+		function,
+		[]*MoveTypeTag{baseCoin, quoteCoin},
+		nil,
+	)
+
+	tx := &Transaction{Payload: payload}
+
+	ApplyTransactionOptions(tx, options...)
+
+	tx.Sender = sender
 
 	return tx
 }

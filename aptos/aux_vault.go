@@ -24,10 +24,10 @@ type AuxCoinBalance struct {
 	AvailableBalance JsonUint64 `json:"available_balance"` // note on aux this is uint128.
 }
 
-func (auxInfo *AuxClientConfig) GetCoinBalanceType(coinType *MoveTypeTag) *MoveTypeTag {
+func (info *AuxClientConfig) GetCoinBalanceType(coinType *MoveTypeTag) *MoveTypeTag {
 	return &MoveTypeTag{
 		MoveModuleTag: MoveModuleTag{
-			Address: auxInfo.Address,
+			Address: info.Address,
 			Module:  "vault",
 		},
 		Name:                  "CoinBalance",
@@ -39,4 +39,55 @@ func (auxInfo *AuxClientConfig) GetCoinBalanceType(coinType *MoveTypeTag) *MoveT
 func (client *Client) GetAuxCoinBalance(ctx context.Context, auxInfo *AuxClientConfig, user Address, coinType *MoveTypeTag) (*AuxCoinBalance, error) {
 	onchainAddress := GetAuxOnChainSignerAddress(auxInfo.Address, user)
 	return GetAccountResourceWithType[AuxCoinBalance](ctx, client, onchainAddress, auxInfo.GetCoinBalanceType(coinType), 0)
+}
+
+const AuxVaultModuleName = "vault"
+
+func (info *AuxClientConfig) Vault_CreateAuxAccount(sender Address, options ...TransactionOption) *Transaction {
+	function := MustNewMoveFunctionTag(info.Address, AuxVaultModuleName, "create_aux_account")
+
+	payload := NewEntryFunctionPayload(function, nil, nil)
+
+	tx := &Transaction{Payload: payload}
+
+	ApplyTransactionOptions(tx, options...)
+
+	tx.Sender = sender
+
+	return tx
+}
+
+func (info *AuxClientConfig) Vault_Deposit(sender Address, to Address, coinType *MoveTypeTag, amount uint64, options ...TransactionOption) *Transaction {
+	function := MustNewMoveFunctionTag(info.Address, AuxVaultModuleName, "deposit")
+
+	if to.IsZero() {
+		to = sender
+	}
+
+	tx := &Transaction{
+		Payload: NewEntryFunctionPayload(function, []*MoveTypeTag{coinType}, []EntryFunctionArg{
+			to,
+			JsonUint64(amount),
+		}),
+	}
+
+	ApplyTransactionOptions(tx, options...)
+
+	tx.Sender = sender
+
+	return tx
+}
+
+func (info *AuxClientConfig) Vault_Withdraw(sender Address, coinType *MoveTypeTag, amount uint64, options ...TransactionOption) *Transaction {
+	function := MustNewMoveFunctionTag(info.Address, AuxVaultModuleName, "withdraw")
+
+	tx := &Transaction{
+		Payload: NewEntryFunctionPayload(function, []*MoveTypeTag{coinType}, []EntryFunctionArg{JsonUint64(amount)}),
+	}
+
+	ApplyTransactionOptions(tx, options...)
+
+	tx.Sender = sender
+
+	return tx
 }
