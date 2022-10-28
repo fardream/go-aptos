@@ -2,10 +2,8 @@ package cmd
 
 import (
 	"context"
-	"encoding/hex"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/spf13/cobra"
@@ -69,7 +67,7 @@ If no fee bps is specified, it will be set to 30.
 
 		auxConfig := getOrPanic(aptos.GetAuxClientConfig(args.network))
 
-		client := aptos.NewClient(args.endpoint)
+		client := getOrPanic(aptos.NewClient(args.network, args.endpoint))
 
 		baseCoin := getOrPanic(parseCoinType(args.network, coinX))
 		quoteCoin := getOrPanic(parseCoinType(args.network, coinY))
@@ -89,16 +87,7 @@ If no fee bps is specified, it will be set to 30.
 			return
 		}
 
-		resp := getOrPanic(client.EncodeSubmission(context.Background(), &aptos.EncodeSubmissionRequest{
-			Transaction: tx,
-		}))
-
-		signature := getOrPanic(account.Sign(getOrPanic(hex.DecodeString(strings.TrimPrefix(string(*resp.Parsed), "0x")))))
-
-		spew.Dump(getOrPanic(client.SubmitTransaction(context.Background(), &aptos.SubmitTransactionRequest{
-			Transaction: tx,
-			Signature:   *signature,
-		})))
+		spew.Dump(getOrPanic(client.SignSubmitTransactionWait(context.Background(), account, tx, false)))
 	}
 
 	return cmd

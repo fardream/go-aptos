@@ -25,7 +25,7 @@ func GetListChainCmd() *cobra.Command {
 			orPanic(err)
 		}
 
-		client := aptos.NewClient(r)
+		client := aptos.MustNewClient(network, r)
 		spew.Dump(getOrPanic(client.GetLedgerInfo(context.Background())))
 		spew.Dump(getOrPanic(client.EstimateGasPrice(context.Background())))
 	}

@@ -14,7 +14,7 @@ const testUserMenmonic = "escape summer cupboard disagree coach mother permit su
 func TestClient_EncodeSubmission(t *testing.T) {
 	config, _ := aptos.GetAuxClientConfig(aptos.Devnet)
 	moduleAddress := config.Address
-	devnetClient := aptos.NewClient("https://fullnode.devnet.aptoslabs.com/v1")
+	devnetClient := aptos.MustNewClient(aptos.Devnet, "https://fullnode.devnet.aptoslabs.com/v1")
 	account, _ := aptos.NewLocalAccountFromMnemonic(testUserMenmonic, "")
 	t.Logf("sender is %s", account.Address.String())
 	expirationSecs := aptos.JsonUint64(time.Date(3000, 12, 31, 0, 0, 0, 0, time.UTC).Unix())
@@ -37,6 +37,7 @@ func TestClient_EncodeSubmission(t *testing.T) {
 			[]*aptos.MoveTypeTag{aptos.MustNewMoveTypeTag(moduleAddress, "fake_coin", "USDC", nil)},
 			[]aptos.EntryFunctionArg{aptos.JsonUint64(10000000000)},
 		),
+		ChainId: 34,
 	}
 
 	// technically, we should fill the transaction.
@@ -67,7 +68,7 @@ func TestClient_EncodeSubmission(t *testing.T) {
 		t.Fatalf("want: %s\ngot:%s\n", expected, result)
 	}
 
-	result = "0x" + hex.EncodeToString(aptos.EncodeTransaction(tx, 34))
+	result = "0x" + hex.EncodeToString(aptos.EncodeTransaction(tx))
 	if expected != result {
 		t.Fatalf("want: %s\ngot:%s\n", expected, result)
 	}

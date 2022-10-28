@@ -1,6 +1,9 @@
 package aptos
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 //go:generate stringer -type AuxFakeCoin -linecomment
 
@@ -66,6 +69,25 @@ func GetAuxFakeCoinDecimal(fakeCoin AuxFakeCoin) uint8 {
 	}
 
 	return 0
+}
+
+func ParseAuxFakeCoin(s string) (AuxFakeCoin, error) {
+	switch strings.ToUpper(s) {
+	case "ETH":
+		return AuxFakeCoin_ETH, nil
+	case "BTC":
+		return AuxFakeCoin_BTC, nil
+	case "AUX":
+		return AuxFakeCoin_AUX, nil
+	case "USDC":
+		return AuxFakeCoin_USDC, nil
+	case "USDT":
+		return AuxFakeCoin_USDT, nil
+	case "SOL":
+		return AuxFakeCoin_SOL, nil
+	default:
+		return AuxFakeCoin_USDC, fmt.Errorf("failed to recognize the fake coin: %s", s)
+	}
 }
 
 const AuxFakeCoinModuleName = "fake_coin"

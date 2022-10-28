@@ -25,6 +25,7 @@ func GetRootCmd() *cobra.Command {
 		GetUpdatePoolFeeCmd(),
 		GetCreateMarketCmd(),
 		GetListKnownCmd(),
+		GetMintFakeCoinCmd(),
 	)
 
 	return cmd

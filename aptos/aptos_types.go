@@ -27,7 +27,7 @@ var AptosStdAddress = MustParseAddress("0x1")
 
 // LedgerInfo contains basic information about the chain.
 type LedgerInfo struct {
-	ChainId             int32      `json:"chain_id"`
+	ChainId             uint8      `json:"chain_id"`
 	Epoch               JsonUint64 `json:"epoch"`
 	LedgerVersion       JsonUint64 `json:"ledger_version"`
 	OldestLedgerVersion JsonUint64 `json:"oldest_ledger_version"`

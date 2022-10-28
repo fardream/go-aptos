@@ -22,6 +22,9 @@ type Transaction struct {
 	// ExpirationTimestampSecs
 	ExpirationTimestampSecs JsonUint64            `json:"expiration_timestamp_secs"`
 	Payload                 *EntryFunctionPayload `json:"payload"`
+
+	// chain id - this is not serialized into json for payload
+	ChainId uint8 `json:"-"`
 }
 
 var rawTransactionPrefix []byte
@@ -47,7 +50,7 @@ func init() {
 //   - chain_id
 //
 // for entry function payload, the serialization is as follows
-func EncodeTransaction(tx *Transaction, chainId uint8) []byte {
+func EncodeTransaction(tx *Transaction) []byte {
 	var encoded []byte
 	encoded = append(encoded, rawTransactionPrefix...)
 	encoded = append(encoded, tx.Sender.ToBCS()...)
@@ -56,7 +59,7 @@ func EncodeTransaction(tx *Transaction, chainId uint8) []byte {
 	encoded = append(encoded, tx.MaxGasAmount.ToBCS()...)
 	encoded = append(encoded, tx.GasUnitPrice.ToBCS()...)
 	encoded = append(encoded, tx.ExpirationTimestampSecs.ToBCS()...)
-	encoded = append(encoded, chainId)
+	encoded = append(encoded, tx.ChainId)
 
 	return encoded
 }
@@ -112,4 +115,10 @@ type TransactionInfo struct {
 	Events  []*RawEvent       `json:"events"`
 
 	Timestamp JsonUint64 `json:"timestamp"`
+}
+
+type TransactionWithInfo struct {
+	*Transaction     `json:",inline"`
+	Type             string `json:"type"`
+	*TransactionInfo `json:",inline"`
 }

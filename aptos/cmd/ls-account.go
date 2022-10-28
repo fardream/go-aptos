@@ -27,7 +27,7 @@ func GetListAccountCmd() *cobra.Command {
 			orPanic(err)
 		}
 
-		client := aptos.NewClient(r)
+		client := aptos.MustNewClient(network, r)
 		resp := getOrPanic(client.GetAccountResources(context.Background(), &aptos.GetAccountResourcesRequest{
 			Address: address,
 		}))

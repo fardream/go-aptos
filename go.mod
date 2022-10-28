@@ -7,6 +7,7 @@ require (
 	github.com/goccy/go-yaml v1.9.6
 	github.com/google/go-cmp v0.5.9
 	github.com/google/go-querystring v1.1.0
+	github.com/gorilla/websocket v1.5.0
 	github.com/mattn/go-isatty v0.0.16
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/spf13/cobra v1.6.1

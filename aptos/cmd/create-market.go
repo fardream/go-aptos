@@ -68,7 +68,7 @@ To buy 0.5 BTC at a price of 19000, price should be 19,000,000,000, and the quan
 
 		auxConfig := getOrPanic(aptos.GetAuxClientConfig(args.network))
 
-		client := aptos.NewClient(args.endpoint)
+		client := getOrPanic(aptos.NewClient(args.network, args.endpoint))
 
 		baseCoin := getOrPanic(parseCoinType(args.network, args.baseCoinStr))
 		quoteCoin := getOrPanic(parseCoinType(args.network, args.quoteCoinStr))
@@ -87,14 +87,7 @@ To buy 0.5 BTC at a price of 19000, price should be 19,000,000,000, and the quan
 			return
 		}
 
-		chainId := getOrPanic(client.GetChainId(context.Background()))
-		signingData := aptos.EncodeTransaction(tx, chainId)
-		signature := getOrPanic(account.Sign(signingData))
-
-		spew.Dump(getOrPanic(client.SubmitTransaction(context.Background(), &aptos.SubmitTransactionRequest{
-			Transaction: tx,
-			Signature:   *signature,
-		})))
+		spew.Dump(getOrPanic(client.SignSubmitTransactionWait(context.Background(), account, tx, false)))
 	}
 
 	return cmd

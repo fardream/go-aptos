@@ -19,7 +19,7 @@ func GetListMarketCmd() *cobra.Command {
 		Args:  cobra.NoArgs,
 	}
 
-	network := aptos.Mainnet
+	network := aptos.Devnet
 	endpoint := ""
 	cmd.Flags().VarP(&network, "network", "n", "network for the market.")
 	cmd.Flags().StringVarP(&endpoint, "endpoint", "u", endpoint, "endpoint for the rest api, default to the one provided by aptos labs.")
@@ -35,7 +35,7 @@ func GetListMarketCmd() *cobra.Command {
 
 		moduleAddress := auxConfig.Address
 
-		client := aptos.NewClient(endpoint)
+		client := aptos.MustNewClient(network, endpoint)
 
 		resources := getOrPanic(client.GetAccountResources(context.Background(), &aptos.GetAccountResourcesRequest{
 			Address: moduleAddress,

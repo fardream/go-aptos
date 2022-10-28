@@ -32,7 +32,7 @@ func GetListL2MarketCmd() *cobra.Command {
 
 		auxConfig := getOrPanic(aptos.GetAuxClientConfig(sharedArgs.network))
 
-		client := aptos.NewClient(sharedArgs.endpoint)
+		client := aptos.MustNewClient(sharedArgs.network, sharedArgs.endpoint)
 
 		baseCoin := getOrPanic(parseCoinType(sharedArgs.network, sharedArgs.baseCoinStr))
 		quoteCoin := getOrPanic(parseCoinType(sharedArgs.network, sharedArgs.quoteCoinStr))

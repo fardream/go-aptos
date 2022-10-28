@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -36,6 +37,10 @@ func (client *Client) FillTransactionData(ctx context.Context, tx *Transaction, 
 		}
 
 		tx.GasUnitPrice = JsonUint64(client.gasEstimate.GasEstimate)
+	}
+
+	if tx.ChainId == 0 {
+		tx.ChainId = client.chainId
 	}
 
 	client.defaultTransactionOptions.FillIfDefault(tx)
@@ -113,8 +118,7 @@ func (r *SubmitTransactionRequest) PathSegments() ([]string, error) {
 }
 
 type SubmitTransactionResponse struct {
-	*Transaction     `json:",inline"`
-	*TransactionInfo `json:",inline"`
+	*TransactionWithInfo `json:",inline"`
 }
 
 // GetTransactionByHash
@@ -133,9 +137,25 @@ func (r *GetTransactionByHashRequest) PathSegments() ([]string, error) {
 }
 
 type GetTransactionByHashResponse struct {
-	*Transaction     `json:",inline"`
-	Type             string `json:"type"`
-	*TransactionInfo `json:",inline"`
+	*TransactionWithInfo `json:",inline"`
+}
+
+// GetTransactionByVersion
+func (client *Client) GetTransactionByVersion(ctx context.Context, request *GetTransactionByVersionRequest) (*AptosResponse[GetTransactionByVersionResponse], error) {
+	return doRequestForType[GetTransactionByVersionResponse](ctx, client, request)
+}
+
+type GetTransactionByVersionRequest struct {
+	GetRequest
+	Version JsonUint64 `url:"-"`
+}
+
+func (r *GetTransactionByVersionRequest) PathSegments() ([]string, error) {
+	return []string{"transactions", "by_version", strconv.FormatUint(uint64(r.Version), 10)}, nil
+}
+
+type GetTransactionByVersionResponse struct {
+	*TransactionWithInfo `json:",inline"`
 }
 
 // SimulateTransaction
@@ -172,8 +192,69 @@ func (request *SimulateTransactionRequest) PathSegments() ([]string, error) {
 }
 
 type SimulateTransactionResponse []struct {
-	*Transaction     `json:",inline" url:"-"`
-	*TransactionInfo `json:",inline" url:"-"`
+	*TransactionWithInfo `json:",inline"`
+}
+
+// SignSubmitTransactionWait is a convenient function to sign a transaction, submit it, and optionally wait for it.
+func (client *Client) SignSubmitTransactionWait(ctx context.Context, signer Signer, tx *Transaction, noWait bool, waitOptions ...TransactionWaitOption) (*TransactionWithInfo, error) {
+	signature, err := signer.Sign(tx)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := client.SubmitTransaction(ctx, &SubmitTransactionRequest{
+		Transaction: tx,
+		Signature:   *signature,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if noWait {
+		return resp.Parsed.TransactionWithInfo, nil
+	}
+
+	return client.WaitForTransaction(ctx, resp.Parsed.Hash, waitOptions...)
+}
+
+// WaitForTransaction by default the wait is exponentially backing off with a scale of 2 and initial wait of 1 second.
+// The wait doesn't have a time out, instead, relying context passed in to indicate (e.g. creating a context with `context.WithTimeout`
+// and pass that in).
+func (client *Client) WaitForTransaction(ctx context.Context, txHash string, waitOptions ...TransactionWaitOption) (*TransactionWithInfo, error) {
+	r := &GetTransactionByHashRequest{
+		Hash: txHash,
+	}
+
+	var waitOpt *TransactionWaitOption
+	if len(waitOptions) == 0 {
+		v := NewTransactionWaitOption(2, time.Second)
+		waitOpt = &v
+	} else {
+		waitOpt = &(waitOptions[0])
+	}
+
+waitLoop:
+	for {
+		resp, err := client.GetTransactionByHash(ctx, r)
+		if err != nil {
+			aptosError, ok := err.(*AptosRestError)
+			if !ok || aptosError.HttpStatusCode != http.StatusNotFound {
+				return nil, err
+			} else {
+				continue waitLoop
+			}
+		}
+
+		if resp.Parsed.Type != "pending_transaction" {
+			return resp.Parsed.TransactionWithInfo, nil
+		}
+
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		case <-waitOpt.Wait():
+		}
+	}
 }
 
 type TransactionWaitOption struct {
@@ -204,42 +285,4 @@ func (w *TransactionWaitOption) Wait() <-chan time.Time {
 	}()
 
 	return time.After(w.currentWait)
-}
-
-// WaitForTransaction by default the wait is exponentially backing off with a scale of 2 and initial wait of 1 second.
-func (client *Client) WaitForTransaction(ctx context.Context, txHash string, waitOptions ...TransactionWaitOption) (string, error) {
-	r := &GetTransactionByHashRequest{
-		Hash: txHash,
-	}
-
-	var waitOpt *TransactionWaitOption
-	if len(waitOptions) == 0 {
-		v := NewTransactionWaitOption(2, time.Second)
-		waitOpt = &v
-	} else {
-		waitOpt = &(waitOptions[0])
-	}
-
-waitLoop:
-	for {
-		resp, err := client.GetTransactionByHash(ctx, r)
-		if err != nil {
-			aptosError, ok := err.(*AptosRestError)
-			if !ok || aptosError.HttpStatusCode != http.StatusNotFound {
-				return "", err
-			} else {
-				continue waitLoop
-			}
-		}
-
-		if resp.Parsed.Type != "pending_transaction" {
-			return resp.Parsed.Type, nil
-		}
-
-		select {
-		case <-ctx.Done():
-			return "", ctx.Err()
-		case <-waitOpt.Wait():
-		}
-	}
 }

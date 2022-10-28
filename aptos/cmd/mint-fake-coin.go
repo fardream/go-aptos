@@ -6,41 +6,56 @@ import (
 	"os"
 
 	"github.com/davecgh/go-spew/spew"
-	"github.com/spf13/cobra"
-
 	"github.com/fardream/go-aptos/aptos"
+	"github.com/spf13/cobra"
 )
 
-func GetUpdatePoolFeeCmd() *cobra.Command {
+func GetMintFakeCoinCmd() *cobra.Command {
+	const longDescription = `Mint fake coin to test trades on https://aux.exchagne.
+
+Only support devnet and testnet.
+
+Following fake coins are available:
+- ETH
+- BTC
+- USDC
+- USDT
+- SOL
+- AUX
+
+Minting those coins doesnt need authority, anyone can mint as much as they want.
+
+` + commonLongDescription
+
 	cmd := &cobra.Command{
-		Use:   "update-pool-fee",
-		Short: "update pool fee",
-		Args:  cobra.NoArgs,
+		Use:   "mint-fake-coin",
+		Short: "mint fake coin to use on testnet/devnet",
+		Long:  longDescription,
 	}
-
-	coinX := ""
-	coinY := ""
-
-	var feeBps uint64 = 30
 
 	args := NewSharedArgs()
 	args.SetCmd(cmd)
 
-	cmd.PersistentFlags().StringVarP(&coinX, "coin-x", "x", coinX, "x coin for the amm")
-	cmd.MarkPersistentFlagRequired("coin-x")
-	cmd.PersistentFlags().StringVarP(&coinY, "coin-y", "y", coinY, "x coin for the amm")
-	cmd.MarkPersistentFlagRequired("coin-y")
-	cmd.PersistentFlags().Uint64VarP(&feeBps, "fee-bps", "f", feeBps, "fee in bps")
-	cmd.MarkPersistentFlagRequired("fee-bps")
+	var fakeCoin string
+	var amount uint64
+
+	cmd.PersistentFlags().StringVarP(&fakeCoin, "coin", "x", fakeCoin, "fake coin to mint")
+	cmd.MarkPersistentFlagRequired("coin")
+
+	cmd.PersistentFlags().Uint64VarP(&amount, "amount", "a", amount, "amount to mint")
+	cmd.MarkPersistentFlagRequired("amount")
 
 	cmd.Run = func(*cobra.Command, []string) {
+		args.UpdateProfileForCmd(cmd)
+
+		if args.network != aptos.Devnet && args.network != aptos.Testnet {
+			orPanic(fmt.Errorf("unsupported network: %s", args.network))
+		}
+
 		configFile, _ := getConfigFileLocation()
 		configs := getOrPanic(aptos.ParseAptosConfigFile(getOrPanic(os.ReadFile(configFile))))
 		if configs.Profiles == nil {
 			orPanic(fmt.Errorf("empty configuration at %s", configFile))
-		}
-		if !cmd.PersistentFlags().Changed("profile") {
-			args.profile = string(args.network)
 		}
 
 		config, ok := configs.Profiles[args.profile]
@@ -62,10 +77,9 @@ func GetUpdatePoolFeeCmd() *cobra.Command {
 
 		client := aptos.MustNewClient(args.network, args.endpoint)
 
-		baseCoin := getOrPanic(parseCoinType(args.network, coinX))
-		quoteCoin := getOrPanic(parseCoinType(args.network, coinY))
+		coin := getOrPanic(aptos.ParseAuxFakeCoin(fakeCoin))
 
-		tx := auxConfig.Amm_UpdateFee(account.Address, baseCoin, quoteCoin, feeBps, aptos.TransactionOption_MaxGasAmount(args.maxGasAmount))
+		tx := auxConfig.FakeCoin_RegisterAndMint(account.Address, coin, amount, aptos.TransactionOption_MaxGasAmount(args.maxGasAmount))
 
 		orPanic(client.FillTransactionData(context.Background(), tx, false))
 

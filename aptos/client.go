@@ -18,14 +18,39 @@ type Client struct {
 	restUrl     string
 	gasEstimate *EstimateGasPriceResponse
 	ledgerInfo  *LedgerInfo
+	chainId     uint8
 
 	defaultTransactionOptions TransactionOptions
 }
 
-// NewClient creates a new client with an endpoint
-func NewClient(restUrl string, transactionOptions ...TransactionOption) *Client {
+func GetChainIdForNetwork(network Network) uint8 {
+	switch network {
+	case Mainnet:
+		return 1
+	case Devnet:
+		return 34
+	case Testnet:
+		return 2
+	default:
+		return 0
+	}
+}
+
+// NewClient creates a new client for the given network.
+// Values will be taken from the default of the network.
+// URL can be left empty.
+func NewClient(network Network, restUrl string, transactionOptions ...TransactionOption) (*Client, error) {
+	url := restUrl
+	var err error
+	if url == "" {
+		url, _, err = GetDefaultEndpoint(network)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	client := &Client{
-		restUrl: restUrl,
+		restUrl: url,
 	}
 
 	for _, opt := range transactionOptions {
@@ -37,7 +62,17 @@ func NewClient(restUrl string, transactionOptions ...TransactionOption) *Client 
 		client.defaultTransactionOptions.SetOption(TransactionOption_MaxGasAmount(20000))
 	}
 
-	return client
+	client.SetChainId(GetChainIdForNetwork(network))
+
+	return client, nil
+}
+
+func MustNewClient(network Network, restUrl string, transactionOptions ...TransactionOption) *Client {
+	return must(NewClient(network, restUrl, transactionOptions...))
+}
+
+func (client *Client) SetChainId(chainId uint8) {
+	client.chainId = chainId
 }
 
 // RefreshData updates gas price estimates and ledger info.
@@ -52,6 +87,7 @@ func (client *Client) RefreshData(ctx context.Context) error {
 		return err
 	} else {
 		client.ledgerInfo = info.Parsed.LedgerInfo
+		client.chainId = info.Parsed.ChainId
 	}
 
 	return nil

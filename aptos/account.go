@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/google/go-cmp/cmp"
 	"golang.org/x/crypto/sha3"
 )
 
@@ -122,11 +123,34 @@ func NewLocalAccountWithRandomKey() (*LocalAccount, error) {
 	}, nil
 }
 
-func (account *LocalAccount) Sign(message []byte) (*SingleSignature, error) {
+var (
+	_ Signer        = (*LocalAccount)(nil)
+	_ RawDataSigner = (*LocalAccount)(nil)
+)
+
+func (account *LocalAccount) Sign(tx *Transaction) (*SingleSignature, error) {
+	if !cmp.Equal(tx.Sender, account.Address) {
+		return nil, fmt.Errorf("can only sign for self")
+	}
+
+	return account.SignRawData(EncodeTransaction(tx))
+}
+
+func (account *LocalAccount) SignForSimulation(tx *Transaction) (*SingleSignature, error) {
+	if !cmp.Equal(tx.Sender, account.Address) {
+		return nil, fmt.Errorf("can only sign for self")
+	}
+
+	return account.SignRawDataForSimulation(EncodeTransaction(tx))
+}
+
+// SignRawData
+func (account *LocalAccount) SignRawData(message []byte) (*SingleSignature, error) {
 	signature := ed25519.Sign(account.PrivateKey, message)
 	return NewSingleSignature(&account.PublicKey, signature), nil
 }
 
-func (account *LocalAccount) SignForSimulation(message []byte) (*SingleSignature, error) {
+// SignRawDataForSimulation
+func (account *LocalAccount) SignRawDataForSimulation(message []byte) (*SingleSignature, error) {
 	return NewSingleSignatureForSimulation(&account.PublicKey), nil
 }

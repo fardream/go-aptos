@@ -46,9 +46,14 @@ type MoveTypeTag struct {
 	// Name of the type
 	Name string
 
+	// GenericTypeParameters
 	GenericTypeParameters []*MoveTypeTag
 }
 
+// Get the string presentation of the type, in the form of
+// 0xaddresshex::module_name::TypeName
+// or
+// 0xaddresshex::module_name::TypeName<T1, T2>
 func (t *MoveTypeTag) String() string {
 	genericListStr := ""
 	if len(t.GenericTypeParameters) > 0 {

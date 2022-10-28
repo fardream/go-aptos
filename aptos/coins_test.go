@@ -8,7 +8,7 @@ import (
 )
 
 func TestClientGetCoinBalance(t *testing.T) {
-	client := aptos.NewClient("https://fullnode.devnet.aptoslabs.com/v1")
+	client := aptos.MustNewClient(aptos.Devnet, "https://fullnode.devnet.aptoslabs.com/v1")
 
 	address := aptos.MustParseAddress("0xea383dc2819210e6e427e66b2b6aa064435bf672dc4bdc55018049f0c361d01a")
 

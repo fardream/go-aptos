@@ -9,7 +9,7 @@ import (
 )
 
 func TestClient_GetAuxCoinBalance(t *testing.T) {
-	client := aptos.NewClient(devnetUrl)
+	client := aptos.MustNewClient(aptos.Devnet, devnetUrl)
 	eth, _ := aptos.GetAuxFakeCoinCoinType(devnetConfig.Address, aptos.AuxFakeCoin_ETH)
 	cb, err := client.GetAuxCoinBalance(context.Background(), devnetConfig, trader.Address, eth)
 	if err != nil {

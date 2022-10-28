@@ -30,7 +30,7 @@ func ExampleClient_SubmitTransaction() {
 		panic(err)
 	}
 
-	client := aptos.NewClient(restUrl)
+	client := aptos.MustNewClient(network, restUrl)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*60)
 	defer cancel()
@@ -40,7 +40,7 @@ func ExampleClient_SubmitTransaction() {
 		if err != nil {
 			spew.Dump(err)
 		}
-		fmt.Fprintf(os.Stderr, "fauct tx type: %s\n", txType)
+		fmt.Fprintf(os.Stderr, "fauct tx type: %s\n", txType.Type)
 	}
 
 	tx := aptos.Transaction{
@@ -70,7 +70,7 @@ func ExampleClient_SubmitTransaction() {
 		panic(err)
 	}
 
-	signature, _ := account.Sign(data)
+	signature, _ := account.SignRawData(data)
 
 	request := &aptos.SubmitTransactionRequest{
 		Transaction: &tx,
