@@ -38,9 +38,12 @@ func init() {
 // EncodeTransaction for signing.
 // See here: [doc on aptos.dev], also see the [implementation in typescript]
 //
-// The process is follows
-// - generate sha3_256 of "APTOS::RawTransaction"
-// - bcs serialize in the following order:
+// The process is follows:
+//
+//   - generate sha3_256 of "APTOS::RawTransaction"
+//
+// Then bcs serialize in the following order:
+//
 //   - sender
 //   - sequence_number
 //   - payload
@@ -49,7 +52,7 @@ func init() {
 //   - expiration_timestamp_secs
 //   - chain_id
 //
-// for entry function payload, the serialization is as follows.
+// for entry function payload, see [EntryFunctionPayload.ToBCS].
 //
 // [doc on aptos.dev]: https://aptos.dev/guides/creating-a-signed-transaction#signing-message
 // [implementation in typescript]: https://github.com/aptos-labs/aptos-core/blob/ef6d3f45dfaeafcd76aa189b855d37a408a8e85e/ecosystem/typescript/sdk/src/transaction_builder/builder.ts#L69-L89
