@@ -35,9 +35,8 @@ func init() {
 	rawTransactionPrefix = hash[:]
 }
 
-// EncodeTransaction for signing
-// See here: https://aptos.dev/guides/creating-a-signed-transaction#signing-message
-// also see here https://github.com/aptos-labs/aptos-core/blob/ef6d3f45dfaeafcd76aa189b855d37a408a8e85e/ecosystem/typescript/sdk/src/transaction_builder/builder.ts#L69-L89
+// EncodeTransaction for signing.
+// See here: [doc on aptos.dev], also see the [implementation in typescript]
 //
 // The process is follows
 // - generate sha3_256 of "APTOS::RawTransaction"
@@ -50,7 +49,10 @@ func init() {
 //   - expiration_timestamp_secs
 //   - chain_id
 //
-// for entry function payload, the serialization is as follows
+// for entry function payload, the serialization is as follows.
+//
+// [doc on aptos.dev]: https://aptos.dev/guides/creating-a-signed-transaction#signing-message
+// [implementation in typescript]: https://github.com/aptos-labs/aptos-core/blob/ef6d3f45dfaeafcd76aa189b855d37a408a8e85e/ecosystem/typescript/sdk/src/transaction_builder/builder.ts#L69-L89
 func EncodeTransaction(tx *Transaction) []byte {
 	var encoded []byte
 	encoded = append(encoded, rawTransactionPrefix...)

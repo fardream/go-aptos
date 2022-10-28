@@ -232,7 +232,7 @@ func (t *MoveTypeTag) Set(data string) error {
 }
 
 // ToBCS for MoveTypeTag.
-// Note move supports 8 types (see [MoveType]), therefore the first byte is 7, which is `MoveType_Struct`
+// Note move supports 8 types (see [MoveType]), therefore the first byte is 7, which is [MoveType_Struct]
 func (t *MoveTypeTag) ToBCS() []byte {
 	r := append([]byte{byte(MoveType_Struct)}, t.MoveModuleTag.ToBCS()...)
 	r = append(r, StringToBCS(t.Name)...)

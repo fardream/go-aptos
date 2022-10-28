@@ -157,7 +157,7 @@ func doRequest[TResponse any](ctx context.Context, client *Client, method string
 	return res, nil
 }
 
-// doRequestForType takes an AptosRequest, construct the request and pass on to `doRequest`.
+// doRequestForType takes an AptosRequest, construct the request and pass on to [doRequest].
 func doRequestForType[TResponse any](ctx context.Context, client *Client, request AptosRequest) (*AptosResponse[TResponse], error) {
 	pathSegments, err := request.PathSegments()
 	if err != nil {

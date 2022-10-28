@@ -15,12 +15,14 @@ const SignatureLength = 64
 
 // GenerateAuthenticationKey calculates the authentication key for a scheme.
 //
-// The information is based on https://aptos.dev/concepts/basics-accounts/#signature-schemes
+// The information is based on documentation on [aptos.dev]
 //
 // Account in aptos is presented by SHA3-256 of
 // - a public key of ed25519 public key (pub_key|0x00)
 // - a series of ed25519 public keys, the number of signature required (pub_key_1 | pub_key_2 ... | pub_key_n | K | 0x01)
 // - an address and some seed (address | seed) if on chain.
+//
+// [aptos.dev]: https://aptos.dev/concepts/basics-accounts/#signature-schemes
 func GenerateAuthenticationKey(
 	totalSignerCount int,
 	requiredSignerCount int,

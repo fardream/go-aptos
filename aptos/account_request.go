@@ -7,8 +7,9 @@ import (
 	"net/url"
 )
 
-// GetAccount
-// https://fullnode.mainnet.aptoslabs.com/v1/spec#/operations/get_account
+// [GetAccount]
+//
+// [GetAccount]: https://fullnode.mainnet.aptoslabs.com/v1/spec#/operations/get_account
 func (client *Client) GetAccount(ctx context.Context, request *GetAccountRequest) (*AptosResponse[GetAccountResponse], error) {
 	return doRequestForType[GetAccountResponse](ctx, client, request)
 }
@@ -35,8 +36,9 @@ type GetAccountResponse struct {
 	AuthenticationKey string     `json:"authentication_key"`
 }
 
-// GetAccountResources
-// https://fullnode.mainnet.aptoslabs.com/v1/accounts/{address}/resources
+// [GetAccountResources]
+//
+// [GetAccountResources]: https://fullnode.mainnet.aptoslabs.com/v1/accounts/{address}/resources
 func (client *Client) GetAccountResources(ctx context.Context, request *GetAccountResourcesRequest) (*AptosResponse[GetAccountResourcesResponse], error) {
 	return doRequestForType[GetAccountResourcesResponse](ctx, client, request)
 }
@@ -72,8 +74,9 @@ type TypedAccountResource[T any] struct {
 
 type GetAccountResourcesResponse []AccountResource
 
-// GetAccountResource
-// https://fullnode.mainnet.aptoslabs.com/v1/spec#/operations/get_account_resource
+// [GetAccountResource]
+//
+// [GetAccountResource]: https://fullnode.mainnet.aptoslabs.com/v1/spec#/operations/get_account_resource
 func (client *Client) GetAccountResource(ctx context.Context, request *GetAccountResourceRequest) (*AptosResponse[GetAccountResourceResponse], error) {
 	return doRequestForType[GetAccountResourceResponse](ctx, client, request)
 }

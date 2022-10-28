@@ -39,13 +39,15 @@ func NewLocalAccountWithMnemonic() (*LocalAccount, string, error) {
 }
 
 // NewLocalAccountFromMnemonic creates a private key from the mnemonic codes.
-// https://aptos.dev/guides/building-your-own-wallet#mnemonics
-// Also see:
-// https://github.com/aptos-labs/aptos-core/blob/841a79891dfc9e29b3ffd4c04af285981ff4b8bc/ecosystem/typescript/sdk/src/aptos_account.ts#L47-L68
 //
-// This is based on bip32 and bip39
-// hd key: https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
-// mnemonic code: https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
+// see [relevant section] on aptos.dev. Also see [implementation] in typescript
+//
+// This is based on [bip32] and [bip39] from the bitcoin project.
+//
+// [relevant section]: https://aptos.dev/guides/building-your-own-wallet#mnemonics
+// [implementation]: https://github.com/aptos-labs/aptos-core/blob/841a79891dfc9e29b3ffd4c04af285981ff4b8bc/ecosystem/typescript/sdk/src/aptos_account.ts#L47-L68
+// [bip32]: https://github.com/bitcoin/bips/blob/master/bip-0032.mediawiki
+// [bip39]: https://github.com/bitcoin/bips/blob/master/bip-0039.mediawiki
 func NewLocalAccountFromMnemonic(mnemonic string, passphrase string) (*LocalAccount, error) {
 	bip39Seed, err := bip39.NewSeedWithErrorChecking(mnemonic, passphrase)
 	if err != nil {
@@ -66,7 +68,9 @@ type Bip32Key struct {
 	ChainCode []byte
 }
 
-// see https://github.com/aptos-labs/aptos-core/blob/841a79891dfc9e29b3ffd4c04af285981ff4b8bc/ecosystem/typescript/sdk/src/utils/hd-key.ts#L21-L30
+// see [corresponding code in typescript]
+//
+// [corresponding code in typescript]: https://github.com/aptos-labs/aptos-core/blob/841a79891dfc9e29b3ffd4c04af285981ff4b8bc/ecosystem/typescript/sdk/src/utils/hd-key.ts#L21-L30
 func GetBip39MasterKeyFromSeed(seed []byte) (*Bip32Key, error) {
 	h := hmac.New(sha512.New, []byte(HmacKey))
 	_, err := h.Write(seed)
@@ -85,7 +89,9 @@ func GetBip39MasterKeyFromSeed(seed []byte) (*Bip32Key, error) {
 	}, nil
 }
 
-// see https://github.com/aptos-labs/aptos-core/blob/841a79891dfc9e29b3ffd4c04af285981ff4b8bc/ecosystem/typescript/sdk/src/utils/hd-key.ts#L32-L46
+// see [corresponding code in typescript]
+//
+// [corresponding code in typescript]: https://github.com/aptos-labs/aptos-core/blob/841a79891dfc9e29b3ffd4c04af285981ff4b8bc/ecosystem/typescript/sdk/src/utils/hd-key.ts#L32-L46
 func CKDPriv(key *Bip32Key, index uint32) (*Bip32Key, error) {
 	indexBytes := make([]byte, 4)
 	binary.BigEndian.PutUint32(indexBytes, index)
@@ -106,15 +112,20 @@ func CKDPriv(key *Bip32Key, index uint32) (*Bip32Key, error) {
 	}, nil
 }
 
-// see https://github.com/aptos-labs/aptos-core/blob/841a79891dfc9e29b3ffd4c04af285981ff4b8bc/ecosystem/typescript/sdk/src/utils/hd-key.ts#L14
+// see [corresponding code in typescript]
+//
+// [corresponding code in typescript]: https://github.com/aptos-labs/aptos-core/blob/841a79891dfc9e29b3ffd4c04af285981ff4b8bc/ecosystem/typescript/sdk/src/utils/hd-key.ts#L14
 var pathRegex = regexp.MustCompile(`^m(\/[0-9]+')+`)
 
-// see https://github.com/aptos-labs/aptos-core/blob/841a79891dfc9e29b3ffd4c04af285981ff4b8bc/ecosystem/typescript/sdk/src/utils/hd-key.ts#L55-L64
+// see [corresponding code in typescript]
+//
+// [corresponding code in typescript]: https://github.com/aptos-labs/aptos-core/blob/841a79891dfc9e29b3ffd4c04af285981ff4b8bc/ecosystem/typescript/sdk/src/utils/hd-key.ts#L55-L64
 func IsValidBip32Path(path string) bool {
 	_, err := ParseBip32Path(path)
 	return err != nil
 }
 
+// ParseBip32Path
 func ParseBip32Path(path string) ([]uint32, error) {
 	if !pathRegex.MatchString(path) {
 		return nil, fmt.Errorf("%s is not valid path", path)
@@ -139,7 +150,9 @@ func ParseBip32Path(path string) ([]uint32, error) {
 	return result, nil
 }
 
-// see https://github.com/aptos-labs/aptos-core/blob/841a79891dfc9e29b3ffd4c04af285981ff4b8bc/ecosystem/typescript/sdk/src/utils/hd-key.ts#L66-L79
+// see [corresponding code in typescript]
+//
+// [corresponding code in typescript]: https://github.com/aptos-labs/aptos-core/blob/841a79891dfc9e29b3ffd4c04af285981ff4b8bc/ecosystem/typescript/sdk/src/utils/hd-key.ts#L66-L79
 func Bip32DerivePath(path string, seed []byte, offset uint32) (*ed25519.PrivateKey, error) {
 	segments, err := ParseBip32Path(path)
 	if err != nil {

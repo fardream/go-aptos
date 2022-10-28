@@ -53,8 +53,9 @@ func (client *Client) FillTransactionData(ctx context.Context, tx *Transaction, 
 	return nil
 }
 
-// EstimateGasPrice
-// https://fullnode.mainnet.aptoslabs.com/v1/estimate_gas_price
+// [EstimateGasPrice]
+//
+// [EstimateGasPrice]: https://fullnode.mainnet.aptoslabs.com/v1/estimate_gas_price
 func (client *Client) EstimateGasPrice(ctx context.Context) (*AptosResponse[EstimateGasPriceResponse], error) {
 	return doRequestForType[EstimateGasPriceResponse](ctx, client, newPathSegmentHolder("estimate_gas_price"))
 }
@@ -65,8 +66,9 @@ type EstimateGasPriceResponse struct {
 	PrioritizedGasEstimate   uint `json:"prioritized_gas_estimate"`
 }
 
-// EncodeSubmission
-// https://fullnode.mainnet.aptoslabs.com/v1/spec#/operations/encode_submission
+// [EncodeSubmission]
+//
+// [EncodeSubmission]: https://fullnode.mainnet.aptoslabs.com/v1/spec#/operations/encode_submission
 func (client *Client) EncodeSubmission(ctx context.Context, request *EncodeSubmissionRequest) (*AptosResponse[EncodeSubmissionResponse], error) {
 	if len(request.SecondarySigners) == 0 {
 		request.SecondarySigners = nil
@@ -97,8 +99,9 @@ func (r *EncodeSubmissionRequest) PathSegments() ([]string, error) {
 
 type EncodeSubmissionResponse string
 
-// SubmitTransaction
-// https://fullnode.devnet.aptoslabs.com/v1/spec#/operations/submit_transaction
+// [SubmitTransaction]
+//
+// [SubmitTransaction]: https://fullnode.mainnet.aptoslabs.com/v1/spec#/operations/submit_transaction
 func (client *Client) SubmitTransaction(ctx context.Context, request *SubmitTransactionRequest) (*AptosResponse[SubmitTransactionResponse], error) {
 	return doRequestForType[SubmitTransactionResponse](ctx, client, request)
 }
@@ -126,8 +129,9 @@ type SubmitTransactionResponse struct {
 	*TransactionWithInfo `json:",inline"`
 }
 
-// GetTransactionByHash
-// https://fullnode.mainnet.aptoslabs.com/v1/spec#/operations/get_transaction_by_hash
+// [GetTransactionByHash]
+//
+// [GetTransactionByHash]: https://fullnode.mainnet.aptoslabs.com/v1/spec#/operations/get_transaction_by_hash
 func (client *Client) GetTransactionByHash(ctx context.Context, request *GetTransactionByHashRequest) (*AptosResponse[GetTransactionByHashResponse], error) {
 	return doRequestForType[GetTransactionByHashResponse](ctx, client, request)
 }
@@ -145,7 +149,9 @@ type GetTransactionByHashResponse struct {
 	*TransactionWithInfo `json:",inline"`
 }
 
-// GetTransactionByVersion
+// [GetTransactionByVersion]
+//
+// [GetTransactionByVersion]: https://fullnode.mainnet.aptoslabs.com/v1/spec#/operations/get_transaction_by_version
 func (client *Client) GetTransactionByVersion(ctx context.Context, request *GetTransactionByVersionRequest) (*AptosResponse[GetTransactionByVersionResponse], error) {
 	return doRequestForType[GetTransactionByVersionResponse](ctx, client, request)
 }
@@ -163,8 +169,9 @@ type GetTransactionByVersionResponse struct {
 	*TransactionWithInfo `json:",inline"`
 }
 
-// SimulateTransaction
-// https://fullnode.mainnet.aptoslabs.com/v1/transactions/simulate
+// [SimulateTransaction]
+//
+// [SimulateTransaction]: https://fullnode.mainnet.aptoslabs.com/v1/transactions/simulate
 func (client *Client) SimulateTransaction(ctx context.Context, request *SimulateTransactionRequest) (*AptosResponse[SimulateTransactionResponse], error) {
 	if len(request.Signature.Signature) != SignatureLength*2+2 {
 		return nil, fmt.Errorf("signature (%s) is not length %d", request.Signature.Signature, SignatureLength)
@@ -223,7 +230,7 @@ func (client *Client) SignSubmitTransactionWait(ctx context.Context, signer Sign
 }
 
 // WaitForTransaction by default the wait is exponentially backing off with a scale of 2 and initial wait of 1 second.
-// The wait doesn't have a time out, instead, relying context passed in to indicate (e.g. creating a context with `context.WithTimeout`
+// The wait doesn't have a time out, instead, relying context passed in to indicate (e.g. creating a context with [context.WithTimeout]
 // and pass that in).
 func (client *Client) WaitForTransaction(ctx context.Context, txHash string, waitOptions ...TransactionWaitOption) (*TransactionWithInfo, error) {
 	r := &GetTransactionByHashRequest{
