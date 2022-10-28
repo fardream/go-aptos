@@ -6,6 +6,7 @@ import (
 	"math/big"
 )
 
+// Uint128, for convenience of implementation, this uses [big.Int]
 type Uint128 struct {
 	underlying big.Int
 }
@@ -42,7 +43,7 @@ func (i *Uint128) UnmarshalJSON(data []byte) error {
 	return i.check()
 }
 
-func NewEntryFunctionArg_Uint128(s string) (*Uint128, error) {
+func NewUint128(s string) (*Uint128, error) {
 	r := &big.Int{}
 	r, ok := r.SetString(s, 10)
 	if !ok {

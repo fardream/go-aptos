@@ -17,6 +17,7 @@ type Config struct {
 	FaucetUrl  string `yaml:"faucet_url"`
 }
 
+// SetKey set the configurations' private key, public key, and account to LocalAccount
 func (config *Config) SetKey(account *LocalAccount) error {
 	config.PrivateKey = "0x" + hex.EncodeToString(account.PrivateKey.Seed())
 	config.PublicKey = "0x" + hex.EncodeToString(account.PublicKey)
@@ -24,6 +25,7 @@ func (config *Config) SetKey(account *LocalAccount) error {
 	return nil
 }
 
+// GetLocalAccount
 func (config *Config) GetLocalAccount() (*LocalAccount, error) {
 	privateKey, err := NewPrivateKeyFromHexString(config.PrivateKey)
 	if err != nil {
@@ -51,6 +53,7 @@ func (config *Config) GetLocalAccount() (*LocalAccount, error) {
 	}, nil
 }
 
+// ConfigFile contains a profiles map
 type ConfigFile struct {
 	Profiles map[string]*Config `yaml:"profiles"`
 }

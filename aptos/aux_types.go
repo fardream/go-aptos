@@ -30,7 +30,7 @@ func GetAuxClientConfig(chain Network) (*AuxClientConfig, error) {
 	case Devnet:
 		return &AuxClientConfig{
 			Address:           MustParseAddress("0xea383dc2819210e6e427e66b2b6aa064435bf672dc4bdc55018049f0c361d01a"),
-			Deployer:          MustParseAddress("0x7af3306d26c59abae84394a781233310617aff2e6ea229fb383db89042be4a74"),
+			Deployer:          MustParseAddress("0x52746eee4d2ecc79f940f617d1e98f885467c185e93a444bc6231a8b1960c48a"),
 			DataFeedAddress:   MustParseAddress("0x84f372536c73df84327d2af63992f4443e2bd1aec8695fa85693e256fc1f904f"),
 			DataFeedPublicKey: mustEd25519PublicKey("0x2a27ecf198ff20db2634c43177e0d492df63105fa7106706b91a22dc42797d88"),
 		}, nil

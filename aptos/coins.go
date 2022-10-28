@@ -4,6 +4,7 @@ import (
 	"context"
 )
 
+// AptosCoin is the type for aptos coin
 var AptosCoin = MoveTypeTag{
 	MoveModuleTag: MoveModuleTag{
 		Address: AptosStdAddress,
@@ -12,6 +13,7 @@ var AptosCoin = MoveTypeTag{
 	Name: "AptosCoin",
 }
 
+// GetCoinStoreType returns the 0x1::coin::CoinStore<T>
 func GetCoinStoreType(coin *MoveTypeTag) *MoveTypeTag {
 	return &MoveTypeTag{
 		MoveModuleTag: MoveModuleTag{
@@ -24,10 +26,12 @@ func GetCoinStoreType(coin *MoveTypeTag) *MoveTypeTag {
 	}
 }
 
+// Coin, this is golang equivalent of 0x1::coin::Coin
 type Coin struct {
 	Value JsonUint64 `json:"value"`
 }
 
+// CoinStore, this is golang equivalent of 0x1::coin::CoinStore
 type CoinStore struct {
 	Coin           Coin         `json:"coin"`
 	Frozen         bool         `json:"frozen"`
@@ -35,6 +39,7 @@ type CoinStore struct {
 	WithdrawEvents EventHandler `json:"withdraw_events"`
 }
 
+// GetCoinBalance
 func (client *Client) GetCoinBalance(ctx context.Context, address Address, coinType *MoveTypeTag) (uint64, error) {
 	coinStore, err := GetAccountResourceWithType[CoinStore](ctx, client, address, GetCoinStoreType(coinType), 0)
 	if err != nil {
