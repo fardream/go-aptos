@@ -74,6 +74,7 @@ func (t *MoveTypeTag) String() string {
 	return fmt.Sprintf("%s::%s::%s%s", t.Address.String(), t.Module, t.Name, genericListStr)
 }
 
+// NewMoveTypeTag
 func NewMoveTypeTag(address Address, module string, name string, genericTypeParameters []*MoveTypeTag) (*MoveTypeTag, error) {
 	moduleTag, err := NewMoveModuleTag(address, module)
 	if err != nil {

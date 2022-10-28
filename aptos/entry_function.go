@@ -193,6 +193,12 @@ func (v EntryFunctionArgVector[T]) ToBCS() []byte {
 	return r
 }
 
+// ToBCS encodes EntryFunctionPayload to bytes.
+//
+// - first byte is 2, indicating EntryFunctionPayload
+// - serialize function name
+// - serialize generic type arguments
+// - serialize the arguments. Note arguments are serialized first of number of arguments, then each argument needs the length of their serialized bytes as prefix.
 func (f EntryFunctionPayload) ToBCS() []byte {
 	r := []byte{2}
 	r = append(r, f.Function.ToBCS()...)

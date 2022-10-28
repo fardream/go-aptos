@@ -27,6 +27,7 @@ type Transaction struct {
 	ChainId uint8 `json:"-"`
 }
 
+// rawTransactionPrefix is sha3-256 of "APTOS::RawTransaction"
 var rawTransactionPrefix []byte
 
 func init() {
@@ -36,7 +37,7 @@ func init() {
 
 // EncodeTransaction for signing
 // See here: https://aptos.dev/guides/creating-a-signed-transaction#signing-message
-// also see here
+// also see here https://github.com/aptos-labs/aptos-core/blob/ef6d3f45dfaeafcd76aa189b855d37a408a8e85e/ecosystem/typescript/sdk/src/transaction_builder/builder.ts#L69-L89
 //
 // The process is follows
 // - generate sha3_256 of "APTOS::RawTransaction"
@@ -77,6 +78,7 @@ const (
 	simulationSignature = "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
 )
 
+// NewSingleSignature creates a new signature
 func NewSingleSignature(publicKey *ed25519.PublicKey, signature []byte) *SingleSignature {
 	return &SingleSignature{
 		Signature: prefixedHexString(signature),
@@ -85,6 +87,7 @@ func NewSingleSignature(publicKey *ed25519.PublicKey, signature []byte) *SingleS
 	}
 }
 
+// NewSingleSignatureForSimulation creates a new signature
 func NewSingleSignatureForSimulation(publicKey *ed25519.PublicKey) *SingleSignature {
 	return &SingleSignature{
 		Type:      Ed25519SignatureType,
@@ -117,6 +120,7 @@ type TransactionInfo struct {
 	Timestamp JsonUint64 `json:"timestamp"`
 }
 
+// TransactionWithInfo is contains the transaction itself and the results of the transaciton execution.
 type TransactionWithInfo struct {
 	*Transaction     `json:",inline"`
 	Type             string `json:"type"`

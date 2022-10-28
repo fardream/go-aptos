@@ -40,6 +40,11 @@ func (client *Client) FillTransactionData(ctx context.Context, tx *Transaction, 
 	}
 
 	if tx.ChainId == 0 {
+		if client.chainId == 0 {
+			if err := client.RefreshData(ctx); err != nil {
+				return err
+			}
+		}
 		tx.ChainId = client.chainId
 	}
 

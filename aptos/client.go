@@ -27,8 +27,6 @@ func GetChainIdForNetwork(network Network) uint8 {
 	switch network {
 	case Mainnet:
 		return 1
-	case Devnet:
-		return 34
 	case Testnet:
 		return 2
 	default:
@@ -67,10 +65,12 @@ func NewClient(network Network, restUrl string, transactionOptions ...Transactio
 	return client, nil
 }
 
+// MustNewClient creates a new client, panic if error happens.
 func MustNewClient(network Network, restUrl string, transactionOptions ...TransactionOption) *Client {
 	return must(NewClient(network, restUrl, transactionOptions...))
 }
 
+// SetChainId after client is created.
 func (client *Client) SetChainId(chainId uint8) {
 	client.chainId = chainId
 }
@@ -93,7 +93,8 @@ func (client *Client) RefreshData(ctx context.Context) error {
 	return nil
 }
 
-// AptosRestError
+// AptosRestError contains the http status code, message body and message of the response.
+// This is returned when status code >= 400 is returned.
 type AptosRestError struct {
 	// HttpStatusCode returned
 	HttpStatusCode int
