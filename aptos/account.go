@@ -18,9 +18,9 @@ const SignatureLength = 64
 // The information is based on documentation on [aptos.dev]
 //
 // Account in aptos is presented by SHA3-256 of
-// - a public key of ed25519 public key (pub_key|0x00)
-// - a series of ed25519 public keys, the number of signature required (pub_key_1 | pub_key_2 ... | pub_key_n | K | 0x01)
-// - an address and some seed (address | seed) if on chain.
+//   - a public key of ed25519 public key (pub_key|0x00)
+//   - a series of ed25519 public keys, the number of signature required (pub_key_1 | pub_key_2 ... | pub_key_n | K | 0x01)
+//   - an address and some seed (address | seed| 0xFF) if on chain.
 //
 // [aptos.dev]: https://aptos.dev/concepts/basics-accounts/#signature-schemes
 func GenerateAuthenticationKey(
@@ -144,6 +144,10 @@ func (account *LocalAccount) SignForSimulation(tx *Transaction) (*SingleSignatur
 	}
 
 	return account.SignRawDataForSimulation(EncodeTransaction(tx))
+}
+
+func (account *LocalAccount) SignerAddress() Address {
+	return account.Address
 }
 
 // SignRawData

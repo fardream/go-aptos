@@ -118,13 +118,16 @@ func (b *EntryFunctionArg_Bool) UnmarshalJSON(data []byte) error {
 
 // EntryFunctionArgSlice
 //
-//   - for json:
-//     Parsing json or bcs payload coming back from remote is difficult without knowning the type of the payload slice.
-//     This slice will first test if the value is an u64 or bool, then try to convert the value into a string.
-//     If the converted string has 0x prefix, it will try cast that into an address. If casting fails, it will keep it as string.
+// Slices of [EntryFunctionArg] need special handling during serialization and deserialization.
 //
-//   - for bcs:
-//     Instead of serialize each element in the slice, the element of entry function argument slice is prefixed with the length of the
+//   - deserializing response from rest api either in json or bcs is difficult without knowing the types of the elements before
+//     hand.
+//
+//     The following logic is used to deserialize the slices: first, the element of the slice will be first tested if it is an u64 or bool.
+//     Then, it is checked to see if it is a string. If it is a string and it has 0x prefix, cast it to address. If casting to address is unsuccessful,
+//     keep it as a string.
+//
+//   - during serialization, the element of entry function argument slice is prefixed with the length of the
 //     serialized bytes. For example, instead of serialize true to 01, serialize it to 0101.
 type EntryFunctionArgSlice []EntryFunctionArg
 

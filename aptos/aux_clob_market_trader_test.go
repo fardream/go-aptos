@@ -11,14 +11,39 @@ import (
 	"time"
 
 	"github.com/davecgh/go-spew/spew"
-	"github.com/gorilla/websocket"
-
 	"github.com/fardream/go-aptos/aptos"
+	"github.com/gorilla/websocket"
 )
 
-// This is an example of creating 5 traders, to trade on Fake AUX/ Fake USDC Exchange.
-// The order information will be streaming from coinbase
-func Example() {
+func must[T any](in T, err error) T {
+	orPanic(err)
+
+	return in
+}
+
+func orPanic(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
+type Order struct {
+	OrderId   string `json:"order_id"`
+	Price     string `json:"price"`
+	OrderType string `json:"order_type"`
+	Type      string `json:"type"`
+	Size      string `json:"size"`
+	Side      string `json:"side"`
+}
+
+type TraderWithOrdreIds struct {
+	*aptos.AuxClobMarketTrader
+
+	orderIds []string
+}
+
+// Example creating 5 traders, each maintain 3 orders at most
+func ExampleAuxClobMarketTrader() {
 	const network = aptos.Devnet
 
 	const (
@@ -39,36 +64,44 @@ func Example() {
 
 	client := aptos.MustNewClient(network, restUrl)
 
-	traders := []*aptos.LocalAccount{
+	traders := make([]*TraderWithOrdreIds, 0, 5)
+	for _, account := range []*aptos.LocalAccount{
 		must(aptos.NewLocalAccountWithRandomKey()),
 		must(aptos.NewLocalAccountWithRandomKey()),
 		must(aptos.NewLocalAccountWithRandomKey()),
 		must(aptos.NewLocalAccountWithRandomKey()),
 		must(aptos.NewLocalAccountWithRandomKey()),
-	}
-
-	// setup the traders
-	for _, trader := range traders {
-		// get some gas
-		txes := must(aptos.RequestFromFaucet(ctx, faucetUrl, &(trader.Address), desiredAptosBalance*2))
+	} { // get some gas
+		txes := must(aptos.RequestFromFaucet(ctx, faucetUrl, &(account.Address), desiredAptosBalance*2))
 		for _, txhash := range txes {
 			client.WaitForTransaction(ctx, txhash)
 		}
 
 		// create user account
-		must(client.SignSubmitTransactionWait(ctx, trader, auxConfig.Vault_CreateAuxAccount(trader.Address), false))
+		must(client.SignSubmitTransactionWait(ctx, account, auxConfig.Vault_CreateAuxAccount(account.Address), false))
 		<-time.After(5 * time.Second)
 		// request fake coins
-		must(client.SignSubmitTransactionWait(ctx, trader, auxConfig.FakeCoin_RegisterAndMint(trader.Address, aptos.AuxFakeCoin_USDC, desiredUSDCBalance), false))
+		must(client.SignSubmitTransactionWait(ctx, account, auxConfig.FakeCoin_RegisterAndMint(account.Address, aptos.AuxFakeCoin_USDC, desiredUSDCBalance), false))
 		<-time.After(5 * time.Second)
-		must(client.SignSubmitTransactionWait(ctx, trader, auxConfig.FakeCoin_RegisterAndMint(trader.Address, aptos.AuxFakeCoin_AUX, desiredAuxBalance), false))
+		must(client.SignSubmitTransactionWait(ctx, account, auxConfig.FakeCoin_RegisterAndMint(account.Address, aptos.AuxFakeCoin_AUX, desiredAuxBalance), false))
 		<-time.After(5 * time.Second)
 
 		// deposit fake coins
-		must(client.SignSubmitTransactionWait(ctx, trader, auxConfig.Vault_Deposit(trader.Address, trader.Address, usdcFakeCoinCoin, desiredUSDCBalance), false))
+		must(client.SignSubmitTransactionWait(ctx, account, auxConfig.Vault_Deposit(account.Address, account.Address, usdcFakeCoinCoin, desiredUSDCBalance), false))
 		<-time.After(5 * time.Second)
-		must(client.SignSubmitTransactionWait(ctx, trader, auxConfig.Vault_Deposit(trader.Address, trader.Address, auxFakeCoinCoin, desiredAuxBalance), false))
+		must(client.SignSubmitTransactionWait(ctx, account, auxConfig.Vault_Deposit(account.Address, account.Address, auxFakeCoinCoin, desiredAuxBalance), false))
 		<-time.After(5 * time.Second)
+
+		traders = append(traders,
+			&TraderWithOrdreIds{
+				AuxClobMarketTrader: must(
+					aptos.NewAuxClobMarketTrader(
+						ctx,
+						aptos.NewAuxClient(client, auxConfig, account),
+						auxFakeCoinCoin,
+						usdcFakeCoinCoin),
+				),
+			})
 	}
 
 	// connect to coinbase
@@ -137,10 +170,10 @@ func Example() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		client := aptos.MustNewClient(network, restUrl)
 		buyId := 0
 		sellId := 1
-		wait := time.Second * 30
+		wait := time.Second * 5
+		var clienOrderId uint64 = 1
 	orderLoop:
 		for {
 			var order *Order
@@ -177,7 +210,7 @@ func Example() {
 			sizeInt := uint64(size * 1_000_000)
 			sizeInt = (sizeInt / 100000) * 100000
 
-			var trader *aptos.LocalAccount
+			var trader *TraderWithOrdreIds
 			if order.Side == "buy" {
 				buyId %= len(traders)
 				trader = traders[buyId]
@@ -191,16 +224,13 @@ func Example() {
 
 			fmt.Printf("place %s size %d price %d\n", order.Side, sizeInt, priceInt)
 
-			// create a place order transaction
-			tx := auxConfig.ClobMarket_PlaceOrder(
-				trader.Address,
+			result, err := trader.PlaceOrder(
+				ctx,
 				order.Side == "buy",
-				auxFakeCoinCoin,
-				usdcFakeCoinCoin,
 				priceInt,
 				sizeInt,
 				0,
-				aptos.Uint128{},
+				*aptos.NewUint128FromUint64(clienOrderId, 0),
 				aptos.AuxClobMarketOrderType_Limit,
 				0,
 				false,
@@ -209,13 +239,23 @@ func Example() {
 				aptos.TransactionOption_MaxGasAmount(30000),
 			)
 			// print out the order
-			orderString, _ := json.Marshal(tx)
-			fmt.Println(string(orderString))
-
-			// submit transaction
-			_, err = client.SignSubmitTransactionWait(ctx, trader, tx, false)
 			if err != nil {
 				spew.Dump(err)
+			} else {
+				fmt.Println(string(result.RawTransaction.Hash))
+				if result.OrderStatus == aptos.AuxClobMarketOrderStatus_Placed {
+					trader.orderIds = append(trader.orderIds, result.OrderId.Big().String())
+					if len(trader.orderIds) >= 3 {
+						idToCancel := must(aptos.NewUint128(trader.orderIds[0]))
+						trader.orderIds = trader.orderIds[1:]
+						result, err := trader.CancelOrder(ctx, *idToCancel)
+						if err != nil {
+							spew.Dump(err)
+						} else {
+							spew.Dump(result)
+						}
+					}
+				}
 			}
 		}
 	}()

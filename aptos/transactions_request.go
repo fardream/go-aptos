@@ -229,7 +229,7 @@ func (client *Client) SignSubmitTransactionWait(ctx context.Context, signer Sign
 	return client.WaitForTransaction(ctx, resp.Parsed.Hash, waitOptions...)
 }
 
-// WaitForTransaction by default the wait is exponentially backing off with a scale of 2 and initial wait of 1 second.
+// WaitForTransaction: by default the wait is exponentially backing off with a scale of 2 and initial wait of 1 second.
 // The wait doesn't have a time out, instead, relying context passed in to indicate (e.g. creating a context with [context.WithTimeout]
 // and pass that in).
 func (client *Client) WaitForTransaction(ctx context.Context, txHash string, waitOptions ...TransactionWaitOption) (*TransactionWithInfo, error) {

@@ -31,8 +31,8 @@ var AuxAllFakeCoins []AuxFakeCoin = []AuxFakeCoin{
 	AuxFakeCoin_AUX,
 }
 
-// GetAuxFakeCoinType returns the fake coin type. Note, this is actually not a type of coin.
-// Use GetAuxFakeCoinCoinType to get the coin type.
+// GetAuxFakeCoinType returns the fake coin type. Note, this is actually not a type of coin as defined by aptos framework.
+// Use [GetAuxFakeCoinCoinType] to get the coin type.
 func GetAuxFakeCoinType(moduleAddress Address, fakeCoin AuxFakeCoin) (*MoveTypeTag, error) {
 	if fakeCoin >= AuxFakeCoin(len(_AuxFakeCoin_index)-1) {
 		return nil, fmt.Errorf("unknown fake coin: %d", int(fakeCoin))
@@ -45,7 +45,7 @@ func GetAuxFakeCoinType(moduleAddress Address, fakeCoin AuxFakeCoin) (*MoveTypeT
 		nil)
 }
 
-// GetAuxFakeCoinCoinType returns the fake coin coin type - this is a coin as defined by the aptos framework.
+// GetAuxFakeCoinCoinType returns the fake coin **coin** type - **this is a coin as defined by the aptos framework.**
 func GetAuxFakeCoinCoinType(moduleAddress Address, fakeCoin AuxFakeCoin) (*MoveTypeTag, error) {
 	coinType, err := GetAuxFakeCoinType(moduleAddress, fakeCoin)
 	if err != nil {

@@ -7,6 +7,18 @@ import (
 	"net/url"
 )
 
+// AccountModule contains the byte codes and the abi of the module.
+type AccountModule struct {
+	Bytecode MoveBytecode   `json:"bytecode"`
+	Abi      *MoveModuleABI `json:"abi"`
+}
+
+// AccountResource includes the type and json encoding of the data.
+type AccountResource struct {
+	Type *MoveTypeTag    `json:"type"`
+	Data json.RawMessage `json:"data,omitempty"`
+}
+
 // [GetAccount]
 //
 // [GetAccount]: https://fullnode.mainnet.aptoslabs.com/v1/spec#/operations/get_account
@@ -60,12 +72,6 @@ func (r *GetAccountResourcesRequest) PathSegments() ([]string, error) {
 	return []string{"accounts", r.Address.String(), "resources"}, nil
 }
 
-// AccountResource includes the type and json encoding of the data.
-type AccountResource struct {
-	Type *MoveTypeTag    `json:"type"`
-	Data json.RawMessage `json:"data,omitempty"`
-}
-
 // TypedAccountResource
 type TypedAccountResource[T any] struct {
 	AccountResource
@@ -105,7 +111,9 @@ type GetAccountResourceResponse struct {
 	*AccountResource `json:",inline"`
 }
 
-// GetAccountResourceWithType get the resource of specified move type, then marshal it into requested type T
+// GetAccountResourceWithType get the resource of specified move type, then marshal it into requested type T.
+// This is equivalent of calling [client.GetAccountResource], then marshal the response into the type.
+// However, golang doesn't support generic method, so this is a function.
 func GetAccountResourceWithType[T any](ctx context.Context, client *Client, address Address, moveType *MoveTypeTag, ledgerVersion uint64) (*T, error) {
 	request := &GetAccountResourceRequest{
 		Address: address,
@@ -129,3 +137,60 @@ func GetAccountResourceWithType[T any](ctx context.Context, client *Client, addr
 
 	return result, nil
 }
+
+// [GetAccountModules]
+//
+// [GetAccountModules]: https://fullnode.mainnet.aptoslabs.com/v1/spec#/operations/get_account_modules
+func (client *Client) GetAccountModules(ctx context.Context, request *GetAccountModulesRequest) (*AptosResponse[GetAccountModulesResponse], error) {
+	return doRequestForType[GetAccountModulesResponse](ctx, client, request)
+}
+
+var _ AptosRequest = (*GetAccountModulesRequest)(nil)
+
+type GetAccountModulesRequest struct {
+	GetRequest
+
+	Address       Address `url:"-"`
+	LedgerVersion *uint64 `url:"ledger_version,omitempty"`
+}
+
+func (r *GetAccountModulesRequest) PathSegments() ([]string, error) {
+	if r.Address.IsZero() {
+		return nil, fmt.Errorf("empty address for account modules request")
+	}
+
+	return []string{"accounts", r.Address.String(), "modules"}, nil
+}
+
+type GetAccountModulesResponse = []AccountModule
+
+// [GetAccountModule]
+//
+// [GetAccountModule]: https://fullnode.mainnet.aptoslabs.com/v1/spec#/operations/get_account_modules
+func (client *Client) GetAccountModule(ctx context.Context, request *GetAccountModuleRequest) (*AptosResponse[GetAccountModuleResponse], error) {
+	return doRequestForType[GetAccountModuleResponse](ctx, client, request)
+}
+
+var _ AptosRequest = (*GetAccountModuleRequest)(nil)
+
+type GetAccountModuleRequest struct {
+	GetRequest
+
+	Address       Address `url:"-"`
+	LedgerVersion *uint64 `url:"ledger_version,omitempty"`
+	ModuleName    string  `url:"-"`
+}
+
+func (r *GetAccountModuleRequest) PathSegments() ([]string, error) {
+	if r.Address.IsZero() {
+		return nil, fmt.Errorf("empty address for account modules request")
+	}
+
+	if !identifierRegex.MatchString(r.ModuleName) {
+		return nil, fmt.Errorf("%s is not a valid module name", r.ModuleName)
+	}
+
+	return []string{"accounts", r.Address.String(), "module", r.ModuleName}, nil
+}
+
+type GetAccountModuleResponse = AccountModule

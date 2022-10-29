@@ -6,6 +6,9 @@ type Signer interface {
 	Sign(tx *Transaction) (*SingleSignature, error)
 	// Sign transaction for simulation
 	SignForSimulation(tx *Transaction) (*SingleSignature, error)
+
+	// Address
+	SignerAddress() Address
 }
 
 // RawDataSigner signs arbitrary bytes. Prefer to use Signer

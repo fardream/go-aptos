@@ -2,8 +2,6 @@ package cmd
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/spf13/cobra"
@@ -39,32 +37,9 @@ To see a list of all coins that are known, check ls-known command.` + commonLong
 		baseCoin := getOrPanic(parseCoinType(args.network, args.baseCoinStr))
 		quoteCoin := getOrPanic(parseCoinType(args.network, args.quoteCoinStr))
 
-		tx := auxConfig.ClobMarket_LoadAllOrdersIntoEvent(baseCoin, quoteCoin, aptos.TransactionOption_MaxGasAmount(args.maxGasAmount))
+		allOrders := getOrPanic(aptos.NewAuxClient(client, auxConfig, nil).ListAllOrders(context.Background(), baseCoin, quoteCoin, aptos.TransactionOption_MaxGasAmount(args.maxGasAmount)))
 
-		orPanic(client.FillTransactionData(context.Background(), tx, false))
-
-		resp := getOrPanic(
-			client.SimulateTransaction(context.Background(), &aptos.SimulateTransactionRequest{
-				Transaction: tx,
-				Signature:   aptos.NewSingleSignatureForSimulation(&auxConfig.DataFeedPublicKey),
-			}),
-		)
-		parsed := *resp.Parsed
-		if len(parsed) != 1 {
-			orPanic(fmt.Errorf("more than one transactions in response: %s", string(resp.RawData)))
-		}
-		if !parsed[0].Success {
-			orPanic(fmt.Errorf("simulation failed: %s, resp is %s", parsed[0].VmStatus, string(resp.RawData)))
-		}
-		events := parsed[0].Events
-		if len(events) != 1 {
-			orPanic(fmt.Errorf("there should only be one events: %#v", events))
-		}
-
-		var L2 aptos.AuxAllOrdersEvent
-		orPanic(json.Unmarshal(*events[0].Data, &L2))
-
-		spew.Dump(L2)
+		spew.Dump(allOrders)
 	}
 
 	return cmd
