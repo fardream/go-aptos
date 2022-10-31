@@ -71,6 +71,7 @@ func GetAuxFakeCoinDecimal(fakeCoin AuxFakeCoin) uint8 {
 	return 0
 }
 
+// ParseAuxFakeCoin converts a string into fake coin.
 func ParseAuxFakeCoin(s string) (AuxFakeCoin, error) {
 	switch strings.ToUpper(s) {
 	case "ETH":
@@ -90,8 +91,11 @@ func ParseAuxFakeCoin(s string) (AuxFakeCoin, error) {
 	}
 }
 
+// AuxFakeCoinModuleName is the module name for fake coin.
 const AuxFakeCoinModuleName = "fake_coin"
 
+// FakeCoin_RegisterAndMint register and mint fake coins. Any signer can self sign and get those coins. If the sender is not registered, this operation will
+// register user for the coin. If the sender is registered for the coin, it will simply mint.
 func (info *AuxClientConfig) FakeCoin_RegisterAndMint(sender Address, fakeCoin AuxFakeCoin, amount uint64, options ...TransactionOption) *Transaction {
 	function := MustNewMoveFunctionTag(info.Address, AuxFakeCoinModuleName, "register_and_mint")
 
@@ -113,6 +117,7 @@ func (info *AuxClientConfig) FakeCoin_RegisterAndMint(sender Address, fakeCoin A
 	return tx
 }
 
+// FakeCoin_Register registers the user for the fake coin. No effect if the user is already registered.
 func (info *AuxClientConfig) FakeCoin_Register(sender Address, fakeCoin AuxFakeCoin, options ...TransactionOption) *Transaction {
 	function := MustNewMoveFunctionTag(info.Address, AuxFakeCoinModuleName, "register")
 
@@ -133,6 +138,7 @@ func (info *AuxClientConfig) FakeCoin_Register(sender Address, fakeCoin AuxFakeC
 	return tx
 }
 
+// FakeCoin_Mint mints coins to the user. The user must be registered.
 func (info *AuxClientConfig) FakeCoin_Mint(sender Address, fakeCoin AuxFakeCoin, amount uint64, options ...TransactionOption) *Transaction {
 	function := MustNewMoveFunctionTag(info.Address, AuxFakeCoinModuleName, "mint")
 
@@ -154,6 +160,7 @@ func (info *AuxClientConfig) FakeCoin_Mint(sender Address, fakeCoin AuxFakeCoin,
 	return tx
 }
 
+// FakeCoin_Burn burns the fake coins for a user. The is useful when tests require users' balances must start from zero.
 func (info *AuxClientConfig) FakeCoin_Burn(sender Address, fakeCoin AuxFakeCoin, amount uint64, options ...TransactionOption) *Transaction {
 	function := MustNewMoveFunctionTag(info.Address, AuxFakeCoinModuleName, "burn")
 

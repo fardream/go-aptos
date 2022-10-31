@@ -20,19 +20,29 @@ type Transaction struct {
 	// UnitGasPrice
 	GasUnitPrice JsonUint64 `json:"gas_unit_price"`
 	// ExpirationTimestampSecs
-	ExpirationTimestampSecs JsonUint64            `json:"expiration_timestamp_secs"`
-	Payload                 *EntryFunctionPayload `json:"payload"`
+	ExpirationTimestampSecs JsonUint64 `json:"expiration_timestamp_secs"`
+	// Payload
+	Payload *EntryFunctionPayload `json:"payload"`
 
 	// chain id - this is not serialized into json for payload
 	ChainId uint8 `json:"-"`
 }
 
 // rawTransactionPrefix is sha3-256 of "APTOS::RawTransaction"
-var rawTransactionPrefix []byte
+var rawTransactionPrefix []byte = sha3_Sum256Slice([]byte("APTOS::RawTransaction"))
 
-func init() {
-	hash := sha3.Sum256([]byte("APTOS::RawTransaction"))
-	rawTransactionPrefix = hash[:]
+// ToBCS get the signing bytes of the transaction.
+// This is calling [EncodeTransaction] under the hood.
+func (tx *Transaction) ToBCS() []byte {
+	return EncodeTransaction(tx)
+}
+
+// sha3_Sum256Slice returns a the digest as a slice instead of [32]byte.
+// [sha3.Sum256] returns a byte array of length 32 ([32]byte), whereas a slice is expected
+// in many of use cases.
+func sha3_Sum256Slice(data []byte) []byte {
+	hashed := sha3.Sum256(data)
+	return hashed[:]
 }
 
 // EncodeTransaction for signing.
@@ -70,6 +80,22 @@ func EncodeTransaction(tx *Transaction) []byte {
 	return encoded
 }
 
+// GetHash get the hash of the transaction that can be used to look up the transaction on chain.
+//
+// Hash of the transaction is sha3-256 of ("RawTransaction" | bcs encoded transaction).
+// BCS encoded transaction can be obtained by [Transaction.ToBCS] method.
+//
+// See [here].
+//
+// [here]: https://fullnode.mainnet.aptoslabs.com/v1/spec#/operations/get_transaction_by_hash
+func (tx *Transaction) GetHash() []byte {
+	signingBytes := EncodeTransaction(tx)[32:]
+	prefixBytes := []byte("RawTransaction")
+	hashed := sha3.Sum256(append(prefixBytes, signingBytes...))
+
+	return hashed[:]
+}
+
 // SingleSignature
 type SingleSignature struct {
 	Type      string `json:"type"`
@@ -77,11 +103,11 @@ type SingleSignature struct {
 	Signature string `json:"signature"`
 }
 
-const (
-	Ed25519SignatureType = "ed25519_signature"
-	// 64 zero bytes
-	simulationSignature = "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
-)
+// Ed25519SinatureType is the signature type for single signer based on a public/private key of ed25519 type.
+const Ed25519SignatureType = "ed25519_signature"
+
+// 64 zero bytes
+const simulationSignature = "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
 
 // NewSingleSignature creates a new signature
 func NewSingleSignature(publicKey *ed25519.PublicKey, signature []byte) *SingleSignature {

@@ -13,12 +13,19 @@ import (
 	"github.com/tyler-smith/go-bip39"
 )
 
-const (
-	PetraPath      = "m/44'/637'/0'/0'/0'"
-	HmacKey        = "ed25519 seed"
-	HardenedOffset = 0x80000000
-)
+// PetraPath is the path Petra wallet used to derive the private key.
+// See the [doc on aptos.dev].
+//
+// [doc on aptos.dev]: https://aptos.dev/guides/building-your-own-wallet/#creating-an-aptos-account
+const PetraPath = "m/44'/637'/0'/0'/0'"
 
+// HmacKey for bip39
+const HmacKey = "ed25519 seed"
+
+// HardenedOffset is for bip39
+const HardenedOffset = 0x80000000
+
+// NewLocalAccountWithMnemonic creates a new mnemonic, then generate a local account with the associated private key.
 func NewLocalAccountWithMnemonic() (*LocalAccount, string, error) {
 	entropy, err := bip39.NewEntropy(128)
 	if err != nil {

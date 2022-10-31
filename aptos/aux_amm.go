@@ -12,8 +12,10 @@ type AuxAmmPool struct {
 	SwapEvents            *EventHandler `json:"swap_events"`
 }
 
+// AuxAmmModuleName aux::amm
 const AuxAmmModuleName = "amm"
 
+// Amm_CreatePool creates a new pool with the give coin x and coin y.
 func (info *AuxClientConfig) Amm_CreatePool(sender Address, coinX, coinY *MoveTypeTag, feeBps uint64, options ...TransactionOption) *Transaction {
 	function := MustNewMoveFunctionTag(info.Address, AuxAmmModuleName, "create_pool")
 	playload := NewEntryFunctionPayload(
@@ -28,13 +30,13 @@ func (info *AuxClientConfig) Amm_CreatePool(sender Address, coinX, coinY *MoveTy
 
 	ApplyTransactionOptions(tx, options...)
 
-	if tx.Sender.IsZero() {
-		tx.Sender = sender
-	}
+	tx.Sender = sender
 
 	return tx
 }
 
+// Amm_UpdateFee updates the fee of the amm pool.
+// the pool is identified by the coin types.
 func (info *AuxClientConfig) Amm_UpdateFee(sender Address, coinX, coinY *MoveTypeTag, feeBps uint64, options ...TransactionOption) *Transaction {
 	function := MustNewMoveFunctionTag(info.Address, AuxAmmModuleName, "update_fee")
 	playload := NewEntryFunctionPayload(
@@ -49,8 +51,7 @@ func (info *AuxClientConfig) Amm_UpdateFee(sender Address, coinX, coinY *MoveTyp
 
 	ApplyTransactionOptions(tx, options...)
 
-	if tx.Sender.IsZero() {
-		tx.Sender = sender
-	}
+	tx.Sender = sender
+
 	return tx
 }

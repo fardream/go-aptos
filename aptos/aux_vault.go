@@ -24,6 +24,7 @@ type AuxCoinBalance struct {
 	AvailableBalance JsonUint64 `json:"available_balance"` // note on aux this is uint128.
 }
 
+// GetCoinBalanceType get the coin balance and available balance in vault for a user.
 func (info *AuxClientConfig) GetCoinBalanceType(coinType *MoveTypeTag) *MoveTypeTag {
 	return &MoveTypeTag{
 		MoveModuleTag: MoveModuleTag{
@@ -41,6 +42,7 @@ func (client *Client) GetAuxCoinBalance(ctx context.Context, auxInfo *AuxClientC
 	return GetAccountResourceWithType[AuxCoinBalance](ctx, client, onchainAddress, auxInfo.GetCoinBalanceType(coinType), 0)
 }
 
+// AuxVaultModuleName is the module name for vault.
 const AuxVaultModuleName = "vault"
 
 func (info *AuxClientConfig) Vault_CreateAuxAccount(sender Address, options ...TransactionOption) *Transaction {
@@ -57,6 +59,7 @@ func (info *AuxClientConfig) Vault_CreateAuxAccount(sender Address, options ...T
 	return tx
 }
 
+// Vault_Deposit deposits into vault.
 func (info *AuxClientConfig) Vault_Deposit(sender Address, to Address, coinType *MoveTypeTag, amount uint64, options ...TransactionOption) *Transaction {
 	function := MustNewMoveFunctionTag(info.Address, AuxVaultModuleName, "deposit")
 
@@ -78,6 +81,7 @@ func (info *AuxClientConfig) Vault_Deposit(sender Address, to Address, coinType 
 	return tx
 }
 
+// Vault_Withdraw withdraw from the vault.
 func (info *AuxClientConfig) Vault_Withdraw(sender Address, coinType *MoveTypeTag, amount uint64, options ...TransactionOption) *Transaction {
 	function := MustNewMoveFunctionTag(info.Address, AuxVaultModuleName, "withdraw")
 

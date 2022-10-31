@@ -112,8 +112,10 @@ type GetAccountResourceResponse struct {
 }
 
 // GetAccountResourceWithType get the resource of specified move type, then marshal it into requested type T.
-// This is equivalent of calling [client.GetAccountResource], then marshal the response into the type.
-// However, golang doesn't support generic method, so this is a function.
+//
+// This is equivalent of calling [Client.GetAccountResource], then marshal the response into the type.
+//
+// This is a function since golang doesn't support generic method.
 func GetAccountResourceWithType[T any](ctx context.Context, client *Client, address Address, moveType *MoveTypeTag, ledgerVersion uint64) (*T, error) {
 	request := &GetAccountResourceRequest{
 		Address: address,

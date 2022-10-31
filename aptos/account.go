@@ -11,6 +11,7 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
+// SignatureLength aptos uses ed25519 and signature is 64 bytes.
 const SignatureLength = 64
 
 // GenerateAuthenticationKey calculates the authentication key for a scheme.

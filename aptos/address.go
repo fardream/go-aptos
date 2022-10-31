@@ -9,6 +9,7 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
+// AddressLength is the length of aptos account address, 32.
 const AddressLength = 32
 
 // Address in aptos, 32 byte long.

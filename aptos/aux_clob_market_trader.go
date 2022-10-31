@@ -67,7 +67,7 @@ func NewAuxClobMarketTrader(ctx context.Context, auxClient *AuxClient, baseCoin,
 	return r, nil
 }
 
-// AuxClobMarketPlaceOrderResult contains the results from a `[AuxClientConfig.ClobMarket_PlaceOrder]` transaction.
+// AuxClobMarketPlaceOrderResult contains the results from a [AuxClientConfig.ClobMarket_PlaceOrder] transaction.
 //
 // If the transaction is successfully committed to the blockchain, the order will get an order id even if it never goes onto the
 // order book. Note there is no way to differentiate between an empty client order id or a 0 client order id.
@@ -223,7 +223,7 @@ findOrderIdLoop:
 	return result, nil
 }
 
-// AuxClobMarketCancelOrderResult contains the results from a `[AuxClientConfig.ClobMarket_Cancel]` transaction.
+// AuxClobMarketCancelOrderResult contains the results from a [AuxClientConfig.ClobMarket_Cancel] transaction.
 type AuxClobMarketCancelOrderResult struct {
 	RawTransation *TransactionWithInfo
 	IsCancelled   bool

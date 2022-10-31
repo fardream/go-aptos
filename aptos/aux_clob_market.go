@@ -190,6 +190,7 @@ const (
 	AuxClobMarketOrderType_PASSIVE_JOIN                                     // PASSIVE_JOIN
 )
 
+// AuxClobMarketModuleName is the module name for clob market.
 const AuxClobMarketModuleName = "clob_market"
 
 // ClobMarket_PlaceOrder creates a transaction to place an orde on aux.echange.
