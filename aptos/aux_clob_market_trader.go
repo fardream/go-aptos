@@ -130,7 +130,7 @@ func (trader *AuxClobMarketTrader) PlaceOrder(
 	options ...TransactionOption,
 ) (*AuxClobMarketPlaceOrderResult, error) {
 	// Make sure in the input client order id is not zero.
-	if clientOrderId.Cmp(&zeroUint128) != 0 {
+	if clientOrderId.Cmp(&zeroUint128) == 0 {
 		return nil, fmt.Errorf("must pass in non zero client order id to identify returning orders")
 	}
 
