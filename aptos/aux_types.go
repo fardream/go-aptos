@@ -11,6 +11,8 @@ func mustEd25519PublicKey(s string) ed25519.PublicKey {
 	return must(hex.DecodeString(strings.TrimPrefix(s, "0x")))
 }
 
+// GetAuxClientConfig gets the aux exchange configuration for an aptos network.
+// Only mainnet, devnet, and testnet are supported.
 func GetAuxClientConfig(chain Network) (*AuxClientConfig, error) {
 	switch chain {
 	case Mainnet:
@@ -39,15 +41,19 @@ func GetAuxClientConfig(chain Network) (*AuxClientConfig, error) {
 	}
 }
 
-func GetAuxInfoFromLocalAccount(localAccount *LocalAccount) *AuxClientConfig {
+// MustGetAuxClientConfig returns the aux exchange configuration for an aptos network.
+// Panic if fails.
+func MustGetAuxClientConfig(chain Network) *AuxClientConfig {
+	return must(GetAuxClientConfig(chain))
+}
+
+// GetAuxClientConfigFromLocalAccount returns the aux configuration based on a local account.
+// The input local account must be the account that deploys aux to the chain.
+func GetAuxClientConfigFromLocalAccount(localAccount *LocalAccount) *AuxClientConfig {
 	return &AuxClientConfig{
 		Address:           CalculateResourceAddress(localAccount.Address, []byte("aux")),
 		Deployer:          localAccount.Address,
 		DataFeedAddress:   localAccount.Address,
 		DataFeedPublicKey: localAccount.PublicKey,
 	}
-}
-
-func (info *AuxClientConfig) AmmPoolType(coinX *MoveTypeTag, coinY *MoveTypeTag) (*MoveTypeTag, error) {
-	return NewMoveTypeTag(info.Address, "amm", "Pool", []*MoveTypeTag{coinX, coinY})
 }

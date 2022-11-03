@@ -37,6 +37,7 @@ func GetChainIdForNetwork(network Network) uint8 {
 // NewClient creates a new client for the given network.
 // Values will be taken from the default of the network.
 // URL can be left empty.
+// Client's default option includes expire after 5 minutes and max gas of 20,000.
 func NewClient(network Network, restUrl string, transactionOptions ...TransactionOption) (*Client, error) {
 	url := restUrl
 	var err error

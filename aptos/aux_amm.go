@@ -12,6 +12,11 @@ type AuxAmmPool struct {
 	SwapEvents            *EventHandler `json:"swap_events"`
 }
 
+// AmmPoolType returns the move type ([MoveTypeTag]) for a pool
+func (info *AuxClientConfig) AmmPoolType(coinX *MoveTypeTag, coinY *MoveTypeTag) (*MoveTypeTag, error) {
+	return NewMoveTypeTag(info.Address, "amm", "Pool", []*MoveTypeTag{coinX, coinY})
+}
+
 // AuxAmmModuleName aux::amm
 const AuxAmmModuleName = "amm"
 
