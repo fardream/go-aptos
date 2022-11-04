@@ -17,7 +17,7 @@ profiles:
     account: f8572aa66c9e15462878f87c39863d162f9bf547a319c586c5819c1438de016b
     rest_url: "https://fullnode.devnet.aptoslabs.com/v1"
     faucet_url: "https://faucet.devnet.aptoslabs.com/"
-  localnet:
+  local:
     private_key: "0x2f859272453b4ad6e186e19bb9b99fe1ddfccbe680a0490b7b90142a1e5d4430"
     public_key: "0xfcfbf4ec360e0139423ff0fc0ba362b2050f68dd5d3518dbea43610f830458b0"
     account: 22bd90a2f5fb4fdf1ef6a9e9b0982b491f4ac5c3bc241a59959e38fabcce2426
@@ -34,7 +34,7 @@ var expectedConfigParsed aptos.ConfigFile = aptos.ConfigFile{
 			RestUrl:    "https://fullnode.devnet.aptoslabs.com/v1",
 			FaucetUrl:  "https://faucet.devnet.aptoslabs.com/",
 		},
-		"localnet": {
+		"local": {
 			PrivateKey: "0x2f859272453b4ad6e186e19bb9b99fe1ddfccbe680a0490b7b90142a1e5d4430",
 			PublicKey:  "0xfcfbf4ec360e0139423ff0fc0ba362b2050f68dd5d3518dbea43610f830458b0",
 			Account:    "22bd90a2f5fb4fdf1ef6a9e9b0982b491f4ac5c3bc241a59959e38fabcce2426",

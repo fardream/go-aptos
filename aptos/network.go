@@ -7,9 +7,9 @@ type Network string
 const (
 	Devnet    Network = "devnet"
 	Testnet   Network = "testnet"
-	Localnet  Network = "localnet"
+	Localnet  Network = "local"
 	Mainnet   Network = "mainnet"
-	Customnet Network = "customnet"
+	Customnet Network = "custom"
 )
 
 func GetDefaultEndpoint(network Network) (restUrl string, faucetUrl string, err error) {

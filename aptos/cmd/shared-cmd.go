@@ -8,7 +8,7 @@ import (
 const commonLongDescription = `Network and Profile
 
 Many commands accept a network argument and a profile argument. Network is one of the following:
-- localnet
+- local(net)
 - devnet
 - testnet
 - mainnet
