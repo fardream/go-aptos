@@ -263,8 +263,11 @@ waitLoop:
 
 		select {
 		case <-ctx.Done():
+			// stop the wait.
+			// note when the code reaches here, the timer hasn't fired and therefore should be stored and trained.
+			waitOpt.stop()
 			return nil, ctx.Err()
-		case <-waitOpt.Wait():
+		case <-waitOpt.wait():
 		}
 	}
 }
@@ -274,6 +277,8 @@ type TransactionWaitOption struct {
 	InitialWait time.Duration
 
 	currentWait time.Duration
+
+	timer *time.Timer
 }
 
 func NewTransactionWaitOption(scale float64, initialWait time.Duration) TransactionWaitOption {
@@ -284,7 +289,7 @@ func NewTransactionWaitOption(scale float64, initialWait time.Duration) Transact
 	}
 }
 
-func (w *TransactionWaitOption) Wait() <-chan time.Time {
+func (w *TransactionWaitOption) wait() <-chan time.Time {
 	if w.currentWait == 0 {
 		w.currentWait = w.InitialWait
 	}
@@ -292,9 +297,21 @@ func (w *TransactionWaitOption) Wait() <-chan time.Time {
 		return nil
 	}
 
-	defer func() {
-		w.currentWait = time.Duration(float64(w.InitialWait) * w.Scale)
-	}()
+	if w.timer == nil {
+		w.timer = time.NewTimer(w.currentWait)
+	} else {
+		w.timer.Reset(w.currentWait)
+	}
 
-	return time.After(w.currentWait)
+	w.currentWait = time.Duration(float64(w.currentWait) * w.Scale)
+
+	return w.timer.C
+}
+
+func (w *TransactionWaitOption) stop() {
+	if w.timer != nil {
+		if !w.timer.Stop() {
+			<-w.timer.C
+		}
+	}
 }
