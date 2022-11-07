@@ -10,7 +10,7 @@ func _() {
 	var x [1]struct{}
 	_ = x[AuxClobMarketOrderStatus_Placed-0]
 	_ = x[AuxClobMarketOrderStatus_Filled-1]
-	_ = x[AuxClobMarketOrderSTatus_Cancelled-2]
+	_ = x[AuxClobMarketOrderStatus_Cancelled-2]
 }
 
 const _AuxClobMarketOrderStatus_name = "PlacedFilledCancelled"

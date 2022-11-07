@@ -17,7 +17,7 @@ type AuxClobMarketOrderStatus uint64
 const (
 	AuxClobMarketOrderStatus_Placed    AuxClobMarketOrderStatus = iota // Placed
 	AuxClobMarketOrderStatus_Filled                                    // Filled
-	AuxClobMarketOrderSTatus_Cancelled                                 // Cancelled
+	AuxClobMarketOrderStatus_Cancelled                                 // Cancelled
 )
 
 // AuxClobMarketTrader contains the market state, a client to aptos/aux,
@@ -208,7 +208,7 @@ findOrderIdLoop:
 				result.OrderId = &Uint128{}
 				*result.OrderId = cancel.OrderId
 			}
-			result.OrderStatus = AuxClobMarketOrderSTatus_Cancelled
+			result.OrderStatus = AuxClobMarketOrderStatus_Cancelled
 			break findOrderIdLoop
 		}
 	}
