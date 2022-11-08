@@ -28,27 +28,39 @@ func downloadFile(url string) []byte {
 	return msg
 }
 
+const launchAptosNodeLongDescription = `launch an aptos node with podman.
+
+To install podman, see https://podman.io
+
+genesis.blob and waypoint.txt are downloaded from https://github.com/aptos-labs/aptos-networks/,
+except for devnet, which has genesis.blob at https://devnet.aptoslabs.com/genesis.blob and
+waypoint.txt at https://devnet.aptoslabs.com/waypoint.txt
+`
+
 func GetLaunchAptosNodeCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "launch-aptos-node",
 		Short: "launch aptos node",
 		Args:  cobra.NoArgs,
+		Long:  launchAptosNodeLongDescription,
 	}
 
-	networkName := "devnet"
+	networkName := aptos.Devnet
 	workingDir := getOrPanic(os.UserHomeDir())
 	apiPort := "8080"
 	tcpPort := "6180"
 	telemetryPort := "9101"
 	detach := false
+	useGithubForDevnet := false
 
 	cmd.Flags().StringVarP(&workingDir, "working-dir", "d", workingDir, "working directory - default to user home directory. a folder \"aptos-node-{network}\" wil be created in that folder.")
 	cmd.MarkFlagDirname("working-dir")
-	cmd.Flags().StringVarP(&networkName, "chain", "c", networkName, "chain")
+	cmd.Flags().VarP(&networkName, "chain", "c", "chain")
 	cmd.Flags().StringVarP(&apiPort, "api-port", "p", apiPort, "api port (try not to collide with default 8080)")
 	cmd.Flags().StringVarP(&tcpPort, "tcp-port", "t", tcpPort, "tcp port (try not to collide with default 6180)")
 	cmd.Flags().StringVarP(&telemetryPort, "telemetry-port", "m", telemetryPort, "telemetry port (try not to collide with default 9101)")
 	cmd.Flags().BoolVar(&detach, "detach", detach, "detach the podman process")
+	cmd.Flags().BoolVar(&useGithubForDevnet, "use-github-for-devnet", useGithubForDevnet, "use the genesis.blob/waypoint.txt from https://github.com/aptos-labs/aptos-networks/ for devnet. check --help for more details")
 
 	cmd.Run = func(_ *cobra.Command, _ []string) {
 		workingDir = path.Clean(workingDir)
@@ -64,6 +76,11 @@ func GetLaunchAptosNodeCmd() *cobra.Command {
 
 		genesisBlob := downloadFile(fmt.Sprintf("https://github.com/aptos-labs/aptos-networks/blob/main/%s/genesis.blob?raw=true", networkName))
 		waypointTxt := downloadFile(fmt.Sprintf("https://raw.githubusercontent.com/aptos-labs/aptos-networks/main/%s/waypoint.txt", networkName))
+
+		if !useGithubForDevnet && networkName == aptos.Devnet {
+			genesisBlob = downloadFile("https://devnet.aptoslabs.com/genesis.blob")
+			waypointTxt = downloadFile("https://devnet.aptoslabs.com/waypoint.txt")
+		}
 
 		genesisBlobFile := path.Join(realDir, "genesis.blob")
 		waypointFile := path.Join(realDir, "waypoint.txt")
