@@ -14,11 +14,12 @@ func _() {
 	_ = x[AuxFakeCoin_SOL-3]
 	_ = x[AuxFakeCoin_AUX-4]
 	_ = x[AuxFakeCoin_USDT-5]
+	_ = x[AuxFakeCoin_USDCD8-6]
 }
 
-const _AuxFakeCoin_name = "USDCETHBTCSOLAUXUSDT"
+const _AuxFakeCoin_name = "USDCETHBTCSOLAUXUSDTUSDCD8"
 
-var _AuxFakeCoin_index = [...]uint8{0, 4, 7, 10, 13, 16, 20}
+var _AuxFakeCoin_index = [...]uint8{0, 4, 7, 10, 13, 16, 20, 26}
 
 func (i AuxFakeCoin) String() string {
 	if i < 0 || i >= AuxFakeCoin(len(_AuxFakeCoin_index)-1) {
