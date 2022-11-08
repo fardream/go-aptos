@@ -8,6 +8,7 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/fardream/go-aptos/aptos"
+	"github.com/fardream/go-aptos/aptos/known"
 )
 
 func ExampleClient_LoadEvents() {
@@ -26,5 +27,40 @@ func ExampleClient_LoadEvents() {
 	fmt.Println(len(events))
 
 	spew.Sdump(os.Stderr, events)
+	// Output: 312
+}
+
+func ExampleClient_LoadEvents_auxFillEvents() {
+	client := aptos.MustNewClient(aptos.Mainnet, "")
+	auxConfig, _ := aptos.GetAuxClientConfig(aptos.Mainnet)
+
+	auxClient := aptos.NewAuxClient(client, auxConfig, nil)
+
+	usdc := known.GetCoinInfoBySymbol(aptos.Mainnet, "USDC").TokenType.Type
+	apt := known.GetCoinInfoBySymbol(aptos.Mainnet, "APT").TokenType.Type
+
+	// get the market information
+	market, err := auxClient.GetClobMarket(context.Background(), apt, usdc, 0)
+	if err != nil {
+		panic(err)
+	}
+
+	// get the creation number of the event handler for fills, can do the same for OrderPlaced and OrderCancel
+	creationNumber := uint64(market.FillEvents.GUID.Id.CreationNumber)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+	rawevents, err := client.LoadEvents(ctx, auxConfig.Address, creationNumber, 0, 312, 50)
+	if err != nil {
+		spew.Dump(err)
+		panic(err)
+	}
+
+	// converts the raw events into proper fill events
+	events := aptos.FilterAuxClobMarketOrderEvent(rawevents, auxConfig.Address, false, true)
+
+	spew.Sdump(os.Stderr, events)
+	fmt.Println(len(events))
+
 	// Output: 312
 }

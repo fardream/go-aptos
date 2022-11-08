@@ -37,7 +37,12 @@ type GUID struct {
 // [EventHandler]: https://github.com/aptos-labs/aptos-core/blob/ef6d3f45dfaeafcd76aa189b855d37a408a8e85e/aptos-move/framework/aptos-framework/sources/event.move
 type EventHandler struct {
 	Counter JsonUint64 `json:"counter"`
-	GUID    GUID       `json:"guid"`
+	GUID    struct {
+		Id struct {
+			CreationNumber JsonUint64 `json:"creation_num"`
+			AccountAddress Address    `json:"addr"`
+		} `json:"id"`
+	} `json:"guid"`
 }
 
 // AptosStdAddress is the aptos standard library and aptos framework's address on chain, which is 0x1.
