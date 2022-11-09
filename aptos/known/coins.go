@@ -19,8 +19,7 @@ type TokenType struct {
 }
 
 // HippoCoinRegistryEntry is the information contained in the hippo coin registry here
-// https://github.com/hippospace/aptos-coin-list/blob/main/typescript/src/requestList.ts
-// The link is unfortunately a typescript file so not as convenient as a json file.
+// https://github.com/hippospace/aptos-coin-list/blob/main/typescript/src/defaultList.mainnet.json
 type HippoCoinRegistryEntry struct {
 	Name           string    `json:"name"`
 	Symbol         string    `json:"symbol"`

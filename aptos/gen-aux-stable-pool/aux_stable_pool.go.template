@@ -1,0 +1,235 @@
+// Code generated, DO NOT EDIT by hand
+// from github.com/fardream/go-aptos/aptos/gen-aux-stable-pool
+
+package aptos
+
+// AuxStable{{.N}}Pool is a pool with {{.N}} coins that priced at parity.
+type AuxStable{{.N}}Pool struct {
+    /// FeeNumerator, denominator is 10^10
+    FeeNumerator    *Uint128 `json:"fee_numerator"`
+    /// BalancedReserve
+    BalancedReserve *Uint128 `json:"balanced_reserve"`
+    /// Amp
+    Amp             *Uint128 `json:"amp"`
+
+{{range .Xis}}
+    Reserve{{.I}} *Coin     `json:"reserve_{{.I}}"`
+    Fee{{.I}}    *Coin    `json:"fee_{{.I}}"`
+    Scaler{{.I}}     *Uint128 `json:"scaler_{{.I}}"`
+{{end}}}
+
+// AuxStable{{.N}}PoolModuleName aux::stable_{{.N}}pool
+const AuxStable{{.N}}PoolModuleName = "stable_{{.N}}pool"
+
+// AuxRouter{{.N}}PoolModuleName aux::router_{{.N}}pool
+const AuxRouter{{.N}}PoolModuleName = "router_{{.N}}pool"
+
+// Stable{{.N}}PoolType returns the move type tag ([MoveTypeTag]) for a stable {{.N}} pool
+func (info *AuxClientConfig) Stable{{.N}}PoolType({{range .Xis}}coin{{.I}}{{if .NotLast}}, {{end}}{{end}} *MoveTypeTag) (*MoveTypeTag, error) {
+    return NewMoveTypeTag(
+        info.Address,
+        AuxStable{{.N}}PoolModuleName,
+        "Pool",
+        []*MoveTypeTag{
+        {{range .Xis}}coin{{.I}},
+        {{end}}
+        })
+}
+
+// Stable{{.N}}Pool_CreatePool construct the transaction to create a new {{.N}}pool
+func (info *AuxClientConfig) Stable{{.N}}Pool_CreatePool(
+    sender Address,
+{{range .Xis}}coin{{.I}} *MoveTypeTag,
+{{end}}    feeNumerator uint64,
+    amp uint64,
+    options ...TransactionOption,
+) *Transaction {
+    function := MustNewMoveFunctionTag(info.Address, AuxStable{{.N}}PoolModuleName, "create_pool")
+
+    payload := NewEntryFunctionPayload(
+        function,
+        []*MoveTypeTag{
+        {{range .Xis}}    coin{{.I}},
+        {{end}}},
+        []EntryFunctionArg{
+            NewUint128FromUint64(feeNumerator, 0),
+            NewUint128FromUint64(amp, 0),
+        },
+    )
+
+    tx := &Transaction{
+        Payload: payload,
+    }
+
+    ApplyTransactionOptions(tx, options...)
+
+    tx.Sender = sender
+
+    return tx
+}
+
+// Router{{.N}}Pool_AddLiquidity constructs the transaction to add liquidity to a pool
+func (info *AuxClientConfig) Router{{.N}}Pool_AddLiquidity(
+    sender Address,
+    {{range .Xis}}coin{{.I}} *MoveTypeTag,
+    amount{{.I}} uint64,
+    {{end}}minLpAmount uint64,
+    options ...TransactionOption,
+) *Transaction {
+    function := MustNewMoveFunctionTag(info.Address, AuxRouter{{.N}}PoolModuleName, "add_liquidity")
+
+    payload := NewEntryFunctionPayload(
+        function,
+        []*MoveTypeTag{
+        {{range .Xis}}    coin{{.I}},
+        {{end}}},
+        []EntryFunctionArg {
+            {{range .Xis}}JsonUint64(amount{{.I}}),
+            {{end}}JsonUint64(minLpAmount),
+        },
+    )
+
+    tx := &Transaction{
+        Payload: payload,
+    }
+
+    ApplyTransactionOptions(tx, options...)
+
+    tx.Sender = sender
+
+    return tx
+}
+
+// Router{{.N}}Pool_RemoveLiquidityForCoin constructs the transaction to remove liquidity from the pool
+// by specifying the coin amount to withdraw.
+func (info *AuxClientConfig) Router{{.N}}Pool_RemoveLiquidityForCoin(
+    sender Address,
+    {{range .Xis}}coin{{.I}} *MoveTypeTag,
+    amount{{.I}}ToWithdraw uint64,
+    {{end}}maxLpAmount uint64,
+    options ...TransactionOption,
+) *Transaction {
+    function := MustNewMoveFunctionTag(info.Address, AuxRouter{{.N}}PoolModuleName, "remove_liquidity_for_coin")
+
+    payload := NewEntryFunctionPayload(
+        function,
+        []*MoveTypeTag{
+        {{range .Xis}}    coin{{.I}},
+        {{end}}},
+        []EntryFunctionArg {
+            {{range .Xis}}JsonUint64(amount{{.I}}ToWithdraw),
+            {{end}}JsonUint64(maxLpAmount),
+        },
+    )
+
+    tx := &Transaction{
+        Payload: payload,
+    }
+
+    ApplyTransactionOptions(tx, options...)
+
+    tx.Sender = sender
+
+    return tx
+}
+
+// Router{{.N}}Pool_RemoveLiquidity constructs the transaction to remove liquidity from the pool
+// by specifying the amount of lp coins to burn.
+func (info *AuxClientConfig) Router{{.N}}Pool_RemoveLiquidity(
+    sender Address,
+    {{range .Xis}}coin{{.I}} *MoveTypeTag,
+    {{end}}lpAmount uint64,
+    options ...TransactionOption,
+) *Transaction {
+    function := MustNewMoveFunctionTag(info.Address, AuxRouter{{.N}}PoolModuleName, "remove_liquidity")
+
+    payload := NewEntryFunctionPayload(
+        function,
+        []*MoveTypeTag{
+        {{range .Xis}}    coin{{.I}},
+        {{end}}},
+        []EntryFunctionArg {
+            JsonUint64(lpAmount),
+        },
+    )
+
+    tx := &Transaction{
+        Payload: payload,
+    }
+
+    ApplyTransactionOptions(tx, options...)
+
+    tx.Sender = sender
+
+    return tx
+}
+
+// Router{{.N}}Pool_SwapExactCoinForCoin constructs the transaction to swap coins by
+// by specifying the input amount of coins to swap.
+func (info *AuxClientConfig) Router{{.N}}Pool_SwapExactCoinForCoin(
+    sender Address,
+    {{range .Xis}}coin{{.I}} *MoveTypeTag,
+    amount{{.I}} uint64,
+    {{end}}outCoinIndex int,
+    minQuantityOut uint64,
+    options ...TransactionOption,
+) *Transaction {
+    function := MustNewMoveFunctionTag(info.Address, AuxRouter{{.N}}PoolModuleName, "swap_exact_coin_for_coin")
+
+    payload := NewEntryFunctionPayload(
+        function,
+        []*MoveTypeTag{
+        {{range .Xis}}    coin{{.I}},
+        {{end}}},
+        []EntryFunctionArg {
+            {{range .Xis}}JsonUint64(amount{{.I}}),
+            {{end}}EntryFunctionArg_Uint8(outCoinIndex),
+            JsonUint64(minQuantityOut),
+        },
+    )
+
+    tx := &Transaction{
+        Payload: payload,
+    }
+
+    ApplyTransactionOptions(tx, options...)
+
+    tx.Sender = sender
+
+    return tx
+}
+
+// Router{{.N}}Pool_SwapCoinForExactCoin constructs the transaction to swap coins by
+// by specifying the input amount of coins to swap.
+func (info *AuxClientConfig) Router{{.N}}Pool_SwapCoinForExactCoin(
+    sender Address,
+    {{range .Xis}}coin{{.I}} *MoveTypeTag,
+    requestAmount{{.I}} uint64,
+    {{end}}inCoinIndex int,
+    maxQuantityIn uint64,
+    options ...TransactionOption,
+) *Transaction {
+    function := MustNewMoveFunctionTag(info.Address, AuxRouter{{.N}}PoolModuleName, "swap_coin_for_exact_coin")
+
+    payload := NewEntryFunctionPayload(
+        function,
+        []*MoveTypeTag{
+        {{range .Xis}}    coin{{.I}},
+        {{end}}},
+        []EntryFunctionArg {
+            {{range .Xis}}JsonUint64(requestAmount{{.I}}),
+            {{end}}EntryFunctionArg_Uint8(inCoinIndex),
+            JsonUint64(maxQuantityIn),
+        },
+    )
+
+    tx := &Transaction{
+        Payload: payload,
+    }
+
+    ApplyTransactionOptions(tx, options...)
+
+    tx.Sender = sender
+
+    return tx
+}

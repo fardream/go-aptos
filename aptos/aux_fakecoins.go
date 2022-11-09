@@ -13,12 +13,13 @@ import (
 type AuxFakeCoin int
 
 const (
-	AuxFakeCoin_USDC AuxFakeCoin = iota // USDC
-	AuxFakeCoin_ETH                     // ETH
-	AuxFakeCoin_BTC                     // BTC
-	AuxFakeCoin_SOL                     // SOL
-	AuxFakeCoin_AUX                     // AUX
-	AuxFakeCoin_USDT                    // USDT
+	AuxFakeCoin_USDC   AuxFakeCoin = iota // USDC
+	AuxFakeCoin_ETH                       // ETH
+	AuxFakeCoin_BTC                       // BTC
+	AuxFakeCoin_SOL                       // SOL
+	AuxFakeCoin_AUX                       // AUX
+	AuxFakeCoin_USDT                      // USDT
+	AuxFakeCoin_USDCD8                    // USDCD8
 )
 
 // AuxAllFakeCoins contains all the fake coins provided by aux for testing
@@ -29,6 +30,7 @@ var AuxAllFakeCoins []AuxFakeCoin = []AuxFakeCoin{
 	AuxFakeCoin_SOL,
 	AuxFakeCoin_USDT,
 	AuxFakeCoin_AUX,
+	AuxFakeCoin_USDCD8,
 }
 
 // GetAuxFakeCoinType returns the fake coin type. Note, this is actually not a type of coin as defined by aptos framework.
@@ -62,7 +64,7 @@ func GetAuxFakeCoinCoinType(moduleAddress Address, fakeCoin AuxFakeCoin) (*MoveT
 // GetAuxFakeCoinDecimal provides the decimals for fake coins
 func GetAuxFakeCoinDecimal(fakeCoin AuxFakeCoin) uint8 {
 	switch fakeCoin {
-	case AuxFakeCoin_BTC, AuxFakeCoin_ETH, AuxFakeCoin_SOL:
+	case AuxFakeCoin_BTC, AuxFakeCoin_ETH, AuxFakeCoin_SOL, AuxFakeCoin_USDCD8:
 		return 8
 	case AuxFakeCoin_USDC, AuxFakeCoin_USDT, AuxFakeCoin_AUX:
 		return 6
@@ -86,6 +88,8 @@ func ParseAuxFakeCoin(s string) (AuxFakeCoin, error) {
 		return AuxFakeCoin_USDT, nil
 	case "SOL":
 		return AuxFakeCoin_SOL, nil
+	case "USDCD8":
+		return AuxFakeCoin_USDCD8, nil
 	default:
 		return AuxFakeCoin_USDC, fmt.Errorf("failed to recognize the fake coin: %s", s)
 	}
