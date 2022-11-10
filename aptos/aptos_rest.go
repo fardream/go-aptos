@@ -37,7 +37,19 @@ func newPathSegmentHolder(segments ...string) *pathSegmentHolder {
 	}
 }
 
+// AptosReponseHeader contains the header information on a successful aptos response
+type AptosReponseHeader struct {
+	AptosBlockHeight         string
+	AptosChainId             string
+	AptosEpoch               string
+	AptosLedgerOldestVersion string
+	AptosLedgerTimestampUsec string
+	AptosLedgerVersion       string
+	AptosOldestBlockHeight   string
+}
+
 type AptosResponse[T any] struct {
 	RawData []byte
 	Parsed  *T
+	Headers *AptosReponseHeader
 }

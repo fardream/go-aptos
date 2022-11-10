@@ -2,7 +2,7 @@ package aptos
 
 // AuxAmmPool is a constant product amm
 type AuxAmmPool struct {
-	FeeBps   JsonUint64 `json:"feebps"`
+	FeeBps   JsonUint64 `json:"fee_bps"`
 	Frozen   bool       `json:"frozen"`
 	XReserve Coin       `json:"x_reserve"`
 	YReserve Coin       `json:"y_reserve"`
@@ -19,6 +19,45 @@ func (info *AuxClientConfig) AmmPoolType(coinX *MoveTypeTag, coinY *MoveTypeTag)
 
 // AuxAmmModuleName aux::amm
 const AuxAmmModuleName = "amm"
+
+// AuxAmm_AddLiquidityEvent is emitted when liquidity is added. contract [here]
+//
+// [here]: https://github.com/aux-exchange/aux-exchange/blob/v1.0.4/aptos/contract/aux/sources/amm.move#L86-L93
+type AuxAmm_AddLiquidityEvent struct {
+	Timestamp  JsonUint64   `json:"timestamp"`
+	XCoinType  *MoveTypeTag `json:"x_coin_type"`
+	YCoinType  *MoveTypeTag `json:"y_coin_type"`
+	XAddedAu   JsonUint64   `json:"x_added_au"`
+	YAddedAu   JsonUint64   `json:"y_added_au"`
+	LpMintedAu JsonUint64   `json:"lp_minted_au"`
+}
+
+// AuxAmm_RemoveLiquidityEvent is emitted when liquidity is removed. contract [here]
+//
+// [here]: https://github.com/aux-exchange/aux-exchange/blob/v1.0.4/aptos/contract/aux/sources/amm.move#L95-L102
+type AuxAmm_RemoveLiquidityEvent struct {
+	Timestamp  JsonUint64   `json:"timestamp"`
+	XCoinType  *MoveTypeTag `json:"x_coin_type"`
+	YCoinType  *MoveTypeTag `json:"y_coin_type"`
+	XRemovedAu JsonUint64   `json:"x_removed_au"`
+	YRemovedAu JsonUint64   `json:"y_removed_au"`
+	LpBurnedAu JsonUint64   `json:"lp_burned_au"`
+}
+
+// AuxAmm_SwapEvent is emitted when a swap happens on chain. contract [here]
+//
+// [here]: https://github.com/aux-exchange/aux-exchange/blob/v1.0.4/aptos/contract/aux/sources/amm.move#L74-L84
+type AuxAmm_SwapEvent struct {
+	SenderAddr  Address      `json:"sender_addr"`
+	Timestamp   JsonUint64   `json:"timestamp"`
+	InCoinType  *MoveTypeTag `json:"in_coin_type"`
+	OutCoinType *MoveTypeTag `json:"out_coin_type"`
+	InReserve   JsonUint64   `json:"in_reserve"`
+	OutReserve  JsonUint64   `json:"out_reserve"`
+	InAu        JsonUint64   `json:"in_au"`
+	OutAu       JsonUint64   `json:"out_au"`
+	FeeBps      JsonUint64   `json:"fee_bps"`
+}
 
 // Amm_CreatePool creates a new pool with the give coin x and coin y.
 func (info *AuxClientConfig) Amm_CreatePool(sender Address, coinX, coinY *MoveTypeTag, feeBps uint64, options ...TransactionOption) *Transaction {
