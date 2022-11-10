@@ -148,7 +148,17 @@ func doRequest[TResponse any](ctx context.Context, client *Client, method string
 	res := &AptosResponse[TResponse]{
 		RawData: msg,
 		Parsed:  new(TResponse),
+		Headers: &AptosReponseHeader{},
 	}
+
+	// headers
+	res.Headers.AptosBlockHeight = resp.Header.Get("X-APTOS-BLOCK-HEIGHT")
+	res.Headers.AptosChainId = resp.Header.Get("X-APTOS-CHAIN-ID")
+	res.Headers.AptosEpoch = resp.Header.Get("X-APTOS-EPOCH")
+	res.Headers.AptosLedgerOldestVersion = resp.Header.Get("X-APTOS-LEDGER-OLDEST-VERSION")
+	res.Headers.AptosLedgerTimestampUsec = resp.Header.Get("X-APTOS-LEDGER-TIMESTAMPUSEC")
+	res.Headers.AptosLedgerVersion = resp.Header.Get("X-APTOS-LEDGER-VERSION")
+	res.Headers.AptosOldestBlockHeight = resp.Header.Get("X-APTOS-OLDEST-BLOCK-HEIGHT")
 
 	err = json.Unmarshal(msg, res.Parsed)
 	if err != nil {

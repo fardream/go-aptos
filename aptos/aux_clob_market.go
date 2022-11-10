@@ -51,6 +51,8 @@ type AuxClobMarket_Level2Event struct {
 	Asks []*AuxClobMarket_Level2Event_Level `json:"asks"`
 }
 
+// AuxClobMarket_OpenOrderEventInfo contains the open order information for an order
+// that is on the order book.
 type AuxClobMarket_OpenOrderEventInfo struct {
 	Id                Uint128    `json:"id"`
 	CilentOrderId     Uint128    `json:"client_order_id"`
@@ -64,11 +66,16 @@ type AuxClobMarket_OpenOrderEventInfo struct {
 	Timestamp         JsonUint64 `json:"timestamp"`
 }
 
+// AuxClobMarket_AllOrdersEvent contains
+// all the open orders.
+// This is an event because table api doesn't support mass query.
 type AuxClobMarket_AllOrdersEvent struct {
 	Bids [][]*AuxClobMarket_OpenOrderEventInfo `json:"bids"`
 	Asks [][]*AuxClobMarket_OpenOrderEventInfo `json:"asks"`
 }
 
+// AuxClobMarket_OrderPlacedEvent is the event emitted when an order
+// is placed onto the order book.
 type AuxClobMarket_OrderPlacedEvent struct {
 	OrderId       Uint128    `json:"order_id"`
 	ClientOrderId Uint128    `json:"client_order_id"`
@@ -79,6 +86,8 @@ type AuxClobMarket_OrderPlacedEvent struct {
 	Timestamp     JsonUint64 `json:"timestamp"`
 }
 
+// AuxClobMarket_OrderCancelEvent is the event emitted when an order is cancelled,
+// either during a new order process or by a cancel transaction.
 type AuxClobMarket_OrderCancelEvent struct {
 	OrderId        Uint128    `json:"order_id"`
 	ClientOrderId  Uint128    `json:"client_order_id"`
@@ -87,6 +96,7 @@ type AuxClobMarket_OrderCancelEvent struct {
 	Timestamp      JsonUint64 `json:"timestamp"`
 }
 
+// AuxClobMarket_OrderFillEvent is the event emitted when an order is filled.
 type AuxClobMarket_OrderFillEvent struct {
 	OrderId           Uint128    `json:"order_id"`
 	ClientOrderId     Uint128    `json:"client_order_id"`
