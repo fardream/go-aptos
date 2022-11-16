@@ -59,7 +59,9 @@ type AuxAmm_SwapEvent struct {
 	FeeBps      JsonUint64   `json:"fee_bps"`
 }
 
-// Amm_CreatePool creates a new pool with the give coin x and coin y.
+// Amm_CreatePool creates a new pool with the give coin x and coin y. contract [here]
+//
+// [here]: https://github.com/aux-exchange/aux-exchange/blob/v1.0.4/aptos/contract/aux/sources/amm.move#L117-L163
 func (info *AuxClientConfig) Amm_CreatePool(sender Address, coinX, coinY *MoveTypeTag, feeBps uint64, options ...TransactionOption) *Transaction {
 	function := MustNewMoveFunctionTag(info.Address, AuxAmmModuleName, "create_pool")
 	playload := NewEntryFunctionPayload(
@@ -81,6 +83,9 @@ func (info *AuxClientConfig) Amm_CreatePool(sender Address, coinX, coinY *MoveTy
 
 // Amm_UpdateFee updates the fee of the amm pool.
 // the pool is identified by the coin types.
+// contract [here].
+//
+// [here]: https://github.com/aux-exchange/aux-exchange/blob/v1.0.4/aptos/contract/aux/sources/amm.move#L165-L173
 func (info *AuxClientConfig) Amm_UpdateFee(sender Address, coinX, coinY *MoveTypeTag, feeBps uint64, options ...TransactionOption) *Transaction {
 	function := MustNewMoveFunctionTag(info.Address, AuxAmmModuleName, "update_fee")
 	playload := NewEntryFunctionPayload(
@@ -92,6 +97,53 @@ func (info *AuxClientConfig) Amm_UpdateFee(sender Address, coinX, coinY *MoveTyp
 	)
 
 	tx := &Transaction{Payload: playload}
+
+	ApplyTransactionOptions(tx, options...)
+
+	tx.Sender = sender
+
+	return tx
+}
+
+// Amm_SwapExactCoinForCoin swaps coins, with the output amount decided by the input amount.
+// See contract [here]
+//
+// [here]: https://github.com/aux-exchange/aux-exchange/blob/v1.0.4/aptos/contract/aux/sources/amm.move#L176-L199
+func (info *AuxClientConfig) Amm_SwapExactCoinForCoin(sender Address, coinX, coinY *MoveTypeTag, amountIn uint64, minAmountOut uint64, options ...TransactionOption) *Transaction {
+	function := MustNewMoveFunctionTag(info.Address, AuxAmmModuleName, "swap_exact_coin_for_coin_with_signer")
+
+	payload := NewEntryFunctionPayload(function, []*MoveTypeTag{coinX, coinY}, []EntryFunctionArg{
+		JsonUint64(amountIn),
+		JsonUint64(minAmountOut),
+	})
+
+	tx := &Transaction{
+		Payload: payload,
+	}
+
+	ApplyTransactionOptions(tx, options...)
+
+	tx.Sender = sender
+
+	return tx
+}
+
+// Amm_AddLiquidity adds liquidity to amm.
+// See contract [here]
+//
+// [here]: https://github.com/aux-exchange/aux-exchange/blob/v1.0.4/aptos/contract/aux/sources/amm.move#L287-L306
+func (info *AuxClientConfig) Amm_AddLiquidity(sender Address, coinX *MoveTypeTag, xAmount uint64, coinY *MoveTypeTag, yAmount uint64, maxSlippage uint64, options ...TransactionOption) *Transaction {
+	function := MustNewMoveFunctionTag(info.Address, AuxAmmModuleName, "add_liquidity")
+
+	payload := NewEntryFunctionPayload(function, []*MoveTypeTag{coinX, coinY}, []EntryFunctionArg{
+		JsonUint64(xAmount),
+		JsonUint64(yAmount),
+		JsonUint64(maxSlippage),
+	})
+
+	tx := &Transaction{
+		Payload: payload,
+	}
 
 	ApplyTransactionOptions(tx, options...)
 
