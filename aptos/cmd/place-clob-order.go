@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/fardream/go-aptos/aptos"
+	"github.com/fardream/go-bcs/bcs"
 )
 
 func GetPlaceClobOrderCmd() *cobra.Command {
@@ -91,7 +92,7 @@ To buy 0.5 BTC at a price of 19000 USDC, price should be 19,000,000,000, and the
 				limitPrice,
 				quantity,
 				0,
-				aptos.Uint128{},
+				bcs.Uint128{},
 				aptos.AuxClobMarketOrderType_Limit,
 				0,
 				false,

@@ -88,7 +88,3 @@ func (f *MoveFunctionTag) UnmarshalJSON(data []byte) error {
 
 	return internalParseModuleFunctionTag(str, f)
 }
-
-func (f MoveFunctionTag) ToBCS() []byte {
-	return append(f.MoveModuleTag.ToBCS(), StringToBCS(f.Name)...)
-}

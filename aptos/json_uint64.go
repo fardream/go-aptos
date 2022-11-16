@@ -1,10 +1,11 @@
 package aptos
 
 import (
-	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"strconv"
+
+	"github.com/fardream/go-bcs/bcs"
 )
 
 // JsonUint64 is an uint64, but serialized into a string, and can be deserialized from either a string or a number from json.
@@ -14,6 +15,7 @@ type JsonUint64 uint64
 var (
 	_ json.Marshaler   = (*JsonUint64)(nil)
 	_ json.Unmarshaler = (*JsonUint64)(nil)
+	_ bcs.Marshaler    = (*JsonUint64)(nil)
 )
 
 func (i *JsonUint64) UnmarshalJSON(data []byte) error {
@@ -39,8 +41,12 @@ func (i JsonUint64) MarshalJSON() ([]byte, error) {
 	return json.Marshal(strconv.FormatUint(uint64(i), 10))
 }
 
+func (i JsonUint64) MarshalBCS() ([]byte, error) {
+	return bcs.Marshal(uint64(i))
+}
+
 func (i JsonUint64) ToBCS() []byte {
-	b := make([]byte, 8)
-	binary.LittleEndian.PutUint64(b, uint64(i))
-	return b
+	r, _ := bcs.Marshal(uint64(i))
+
+	return r
 }

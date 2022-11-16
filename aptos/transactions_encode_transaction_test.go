@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/fardream/go-aptos/aptos"
+	"github.com/fardream/go-bcs/bcs"
 )
 
 const networkForEncodeTransactionTest = aptos.Devnet
@@ -30,7 +31,7 @@ func TestEncodeTransaction(t *testing.T) {
 		30,
 		90,
 		1,
-		aptos.Uint128{},
+		bcs.Uint128{},
 		aptos.AuxClobMarketOrderType_FOK,
 		1,
 		false,

@@ -53,7 +53,7 @@ func ExampleClient_SubmitTransaction() {
 		Payload: aptos.NewEntryFunctionPayload(
 			aptos.MustNewMoveFunctionTag(auxConfig.Address, "fake_coin", "mint"),
 			[]*aptos.MoveTypeTag{aptos.MustNewMoveTypeTag(auxConfig.Address, "fake_coin", "USDC", nil)},
-			[]aptos.EntryFunctionArg{aptos.JsonUint64(1000000000000)}),
+			[]*aptos.EntryFunctionArg{aptos.EntryFunctionArg_Uint64(1000000000000)}),
 	}
 
 	// fill the missing information (

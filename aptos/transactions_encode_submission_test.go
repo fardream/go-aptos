@@ -36,7 +36,7 @@ func TestClient_EncodeSubmission(t *testing.T) {
 		Payload: aptos.NewEntryFunctionPayload(
 			aptos.MustNewMoveFunctionTag(config.Address, "fake_coin", "mint"),
 			[]*aptos.MoveTypeTag{aptos.MustNewMoveTypeTag(moduleAddress, "fake_coin", "USDC", nil)},
-			[]aptos.EntryFunctionArg{aptos.JsonUint64(10000000000)},
+			[]*aptos.EntryFunctionArg{aptos.EntryFunctionArg_Uint64(10000000000)},
 		),
 		ChainId: aptos.GetChainIdForNetwork(aptos.Testnet),
 	}

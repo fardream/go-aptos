@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/fardream/go-bcs/bcs"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -54,16 +55,16 @@ type AuxClobMarket_Level2Event struct {
 // AuxClobMarket_OpenOrderEventInfo contains the open order information for an order
 // that is on the order book.
 type AuxClobMarket_OpenOrderEventInfo struct {
-	Id                Uint128    `json:"id"`
-	CilentOrderId     Uint128    `json:"client_order_id"`
-	Price             JsonUint64 `json:"price"`
-	Quantity          JsonUint64 `json:"quantity"`
-	AuxAuToBurnPerLot JsonUint64 `json:"aux_au_to_burn_per_lot"`
-	IsBid             bool       `json:"is_bid"`
-	OwnerId           Address    `json:"owner_id"`
-	TimeoutTimestamp  JsonUint64 `json:"timeout_timestsamp"`
-	OrderType         JsonUint64 `json:"order_type"`
-	Timestamp         JsonUint64 `json:"timestamp"`
+	Id                bcs.Uint128 `json:"id"`
+	CilentOrderId     bcs.Uint128 `json:"client_order_id"`
+	Price             JsonUint64  `json:"price"`
+	Quantity          JsonUint64  `json:"quantity"`
+	AuxAuToBurnPerLot JsonUint64  `json:"aux_au_to_burn_per_lot"`
+	IsBid             bool        `json:"is_bid"`
+	OwnerId           Address     `json:"owner_id"`
+	TimeoutTimestamp  JsonUint64  `json:"timeout_timestsamp"`
+	OrderType         JsonUint64  `json:"order_type"`
+	Timestamp         JsonUint64  `json:"timestamp"`
 }
 
 // AuxClobMarket_AllOrdersEvent contains
@@ -77,37 +78,37 @@ type AuxClobMarket_AllOrdersEvent struct {
 // AuxClobMarket_OrderPlacedEvent is the event emitted when an order
 // is placed onto the order book.
 type AuxClobMarket_OrderPlacedEvent struct {
-	OrderId       Uint128    `json:"order_id"`
-	ClientOrderId Uint128    `json:"client_order_id"`
-	Owner         Address    `json:"owner"`
-	IsBid         bool       `json:"is_bid"`
-	Quantity      JsonUint64 `json:"qty"`
-	Price         JsonUint64 `json:"price"`
-	Timestamp     JsonUint64 `json:"timestamp"`
+	OrderId       bcs.Uint128 `json:"order_id"`
+	ClientOrderId bcs.Uint128 `json:"client_order_id"`
+	Owner         Address     `json:"owner"`
+	IsBid         bool        `json:"is_bid"`
+	Quantity      JsonUint64  `json:"qty"`
+	Price         JsonUint64  `json:"price"`
+	Timestamp     JsonUint64  `json:"timestamp"`
 }
 
 // AuxClobMarket_OrderCancelEvent is the event emitted when an order is cancelled,
 // either during a new order process or by a cancel transaction.
 type AuxClobMarket_OrderCancelEvent struct {
-	OrderId        Uint128    `json:"order_id"`
-	ClientOrderId  Uint128    `json:"client_order_id"`
-	Owner          Address    `json:"owner"`
-	CancelQuantity JsonUint64 `json:"cancel_qty"`
-	Timestamp      JsonUint64 `json:"timestamp"`
+	OrderId        bcs.Uint128 `json:"order_id"`
+	ClientOrderId  bcs.Uint128 `json:"client_order_id"`
+	Owner          Address     `json:"owner"`
+	CancelQuantity JsonUint64  `json:"cancel_qty"`
+	Timestamp      JsonUint64  `json:"timestamp"`
 }
 
 // AuxClobMarket_OrderFillEvent is the event emitted when an order is filled.
 type AuxClobMarket_OrderFillEvent struct {
-	OrderId           Uint128    `json:"order_id"`
-	ClientOrderId     Uint128    `json:"client_order_id"`
-	Owner             Address    `json:"owner"`
-	IsBid             bool       `json:"is_bid"`
-	BaseQuantity      JsonUint64 `json:"base_qty"`
-	Price             JsonUint64 `json:"price"`
-	Fee               JsonUint64 `json:"fee"`
-	Rebate            JsonUint64 `json:"rebate"`
-	RemainingQuantity JsonUint64 `json:"remaining_qty"`
-	Timestamp         JsonUint64 `json:"timestamp"`
+	OrderId           bcs.Uint128 `json:"order_id"`
+	ClientOrderId     bcs.Uint128 `json:"client_order_id"`
+	Owner             Address     `json:"owner"`
+	IsBid             bool        `json:"is_bid"`
+	BaseQuantity      JsonUint64  `json:"base_qty"`
+	Price             JsonUint64  `json:"price"`
+	Fee               JsonUint64  `json:"fee"`
+	Rebate            JsonUint64  `json:"rebate"`
+	RemainingQuantity JsonUint64  `json:"remaining_qty"`
+	Timestamp         JsonUint64  `json:"timestamp"`
 }
 
 // AuxClobMarketOrderEvent is an union of all order events
@@ -226,7 +227,7 @@ func (info *AuxClientConfig) ClobMarket_PlaceOrder(
 	limitPrice uint64,
 	quantity uint64,
 	auxToBurnPerLot uint64,
-	clientOrderId Uint128,
+	clientOrderId bcs.Uint128,
 	orderType AuxClobMarketOrderType,
 	ticksToSlide uint64,
 	directionAggressive bool,
@@ -235,20 +236,25 @@ func (info *AuxClientConfig) ClobMarket_PlaceOrder(
 	options ...TransactionOption,
 ) *Transaction {
 	function := MustNewMoveFunctionTag(info.Address, AuxClobMarketModuleName, "place_order")
-	payload := NewEntryFunctionPayload(function, []*MoveTypeTag{baseCoin, quoteCoin}, []EntryFunctionArg{
-		// sender: &signer, // sender is the user who initiates the trade (can also be the vault_account_owner itself) on behalf of vault_account_owner. Will only succeed if sender is the creator of the account, or on the access control list of the account published under vault_account_owner address
-		sender,                                     // vault_account_owner: address, // vault_account_owner is, from the module's internal perspective, the address that actually makes the trade. It will be the actual account that has changes in balance (fee, volume tracker, etc is all associated with vault_account_owner, and independent of sender (i.e. delegatee))
-		EntryFunctionArg_Bool(isBid),               // is_bid: bool,
-		JsonUint64(limitPrice),                     // limit_price: u64,
-		JsonUint64(quantity),                       // quantity: u64,
-		JsonUint64(auxToBurnPerLot),                // aux_au_to_burn_per_lot: u64,
-		clientOrderId,                              // client_order_id: u128,
-		JsonUint64(orderType),                      // order_type: u64,
-		JsonUint64(ticksToSlide),                   // ticks_to_slide: u64, // # of ticks to slide for post only
-		EntryFunctionArg_Bool(directionAggressive), // direction_aggressive: bool, // only used in passive join order
-		JsonUint64(timeoutTimestamp),               // timeout_timestamp: u64, // if by the timeout_timestamp the submitted order is not filled, then it would be cancelled automatically, if the timeout_timestamp <= current_timestamp, the order would not be placed and cancelled immediately
-		JsonUint64(selfTradeType),                  // self_trade_action_type: u64 // self_trade_action_type
-	})
+	orderIdArg := &EntryFunctionArg{
+		Uint128: new(bcs.Uint128),
+	}
+	*orderIdArg.Uint128 = clientOrderId
+	payload := NewEntryFunctionPayload(function, []*MoveTypeTag{baseCoin, quoteCoin},
+		[]*EntryFunctionArg{
+			// sender: &signer, // sender is the user who initiates the trade (can also be the vault_account_owner itself) on behalf of vault_account_owner. Will only succeed if sender is the creator of the account, or on the access control list of the account published under vault_account_owner address
+			EntryFunctionArg_Address(sender),               // vault_account_owner: address, // vault_account_owner is, from the module's internal perspective, the address that actually makes the trade. It will be the actual account that has changes in balance (fee, volume tracker, etc is all associated with vault_account_owner, and independent of sender (i.e. delegatee))
+			EntryFunctionArg_Bool(isBid),                   // is_bid: bool,
+			EntryFunctionArg_Uint64(limitPrice),            // limit_price: u64,
+			EntryFunctionArg_Uint64(quantity),              // quantity: u64,
+			EntryFunctionArg_Uint64(auxToBurnPerLot),       // aux_au_to_burn_per_lot: u64,
+			orderIdArg,                                     // client_order_id: u128,
+			EntryFunctionArg_Uint64(uint64(orderType)),     // order_type: u64,
+			EntryFunctionArg_Uint64(ticksToSlide),          // ticks_to_slide: u64, // # of ticks to slide for post only
+			EntryFunctionArg_Bool(directionAggressive),     // direction_aggressive: bool, // only used in passive join order
+			EntryFunctionArg_Uint64(timeoutTimestamp),      // timeout_timestamp: u64, // if by the timeout_timestamp the submitted order is not filled, then it would be cancelled automatically, if the timeout_timestamp <= current_timestamp, the order would not be placed and cancelled immediately
+			EntryFunctionArg_Uint64(uint64(selfTradeType)), // self_trade_action_type: u64 // self_trade_action_type
+		})
 
 	tx := &Transaction{Payload: payload}
 
@@ -266,7 +272,7 @@ func (info *AuxClientConfig) ClobMarket_LoadMarketIntoEvent(baseCoin, quoteCoin 
 	payload := NewEntryFunctionPayload(
 		function,
 		[]*MoveTypeTag{baseCoin, quoteCoin},
-		[]EntryFunctionArg{},
+		[]*EntryFunctionArg{},
 	)
 
 	tx := &Transaction{
@@ -287,7 +293,7 @@ func (info *AuxClientConfig) ClobMarket_LoadAllOrdersIntoEvent(baseCoin, quoteCo
 	payload := NewEntryFunctionPayload(
 		function,
 		[]*MoveTypeTag{baseCoin, quoteCoin},
-		[]EntryFunctionArg{},
+		[]*EntryFunctionArg{},
 	)
 
 	tx := &Transaction{
@@ -314,9 +320,9 @@ func (info *AuxClientConfig) ClobMarket_CreateMarket(sender Address, baseCoin, q
 	payload := NewEntryFunctionPayload(
 		function,
 		[]*MoveTypeTag{baseCoin, quoteCoin},
-		[]EntryFunctionArg{
-			JsonUint64(lotSize),
-			JsonUint64(tickSize),
+		[]*EntryFunctionArg{
+			EntryFunctionArg_Uint64(lotSize),
+			EntryFunctionArg_Uint64(tickSize),
 		},
 	)
 
@@ -335,8 +341,8 @@ func (info *AuxClientConfig) ClobMarket_CancelAll(sender Address, baseCoin, quot
 	payload := NewEntryFunctionPayload(
 		function,
 		[]*MoveTypeTag{baseCoin, quoteCoin},
-		[]EntryFunctionArg{
-			sender,
+		[]*EntryFunctionArg{
+			EntryFunctionArg_Address(sender),
 		},
 	)
 
@@ -350,12 +356,18 @@ func (info *AuxClientConfig) ClobMarket_CancelAll(sender Address, baseCoin, quot
 }
 
 // ClobMarket_CancelOrder constructs a transaction to cancel an open orde on a given market.
-func (info *AuxClientConfig) ClobMarket_CancelOrder(sender Address, baseCoin, quoteCoin *MoveTypeTag, orderId Uint128, options ...TransactionOption) *Transaction {
+func (info *AuxClientConfig) ClobMarket_CancelOrder(sender Address, baseCoin, quoteCoin *MoveTypeTag, orderId bcs.Uint128, options ...TransactionOption) *Transaction {
 	function := MustNewMoveFunctionTag(info.Address, AuxClobMarketModuleName, "cancel_order")
+	orderIdArg := &EntryFunctionArg{
+		Uint128: new(bcs.Uint128),
+	}
+	*orderIdArg.Uint128 = orderId
 	payload := NewEntryFunctionPayload(
 		function,
 		[]*MoveTypeTag{baseCoin, quoteCoin},
-		[]EntryFunctionArg{sender, orderId},
+		[]*EntryFunctionArg{
+			EntryFunctionArg_Address(sender), orderIdArg,
+		},
 	)
 
 	tx := &Transaction{Payload: payload}

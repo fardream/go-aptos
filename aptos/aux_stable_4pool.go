@@ -3,30 +3,32 @@
 
 package aptos
 
+import "github.com/fardream/go-bcs/bcs"
+
 // AuxStable4Pool is a pool with 4 coins that priced at parity.
 type AuxStable4Pool struct {
 	/// FeeNumerator, denominator is 10^10
-	FeeNumerator *Uint128 `json:"fee_numerator"`
+	FeeNumerator *bcs.Uint128 `json:"fee_numerator"`
 	/// BalancedReserve
-	BalancedReserve *Uint128 `json:"balanced_reserve"`
+	BalancedReserve *bcs.Uint128 `json:"balanced_reserve"`
 	/// Amp
-	Amp *Uint128 `json:"amp"`
+	Amp *bcs.Uint128 `json:"amp"`
 
-	Reserve0 *Coin    `json:"reserve_0"`
-	Fee0     *Coin    `json:"fee_0"`
-	Scaler0  *Uint128 `json:"scaler_0"`
+	Reserve0 *Coin        `json:"reserve_0"`
+	Fee0     *Coin        `json:"fee_0"`
+	Scaler0  *bcs.Uint128 `json:"scaler_0"`
 
-	Reserve1 *Coin    `json:"reserve_1"`
-	Fee1     *Coin    `json:"fee_1"`
-	Scaler1  *Uint128 `json:"scaler_1"`
+	Reserve1 *Coin        `json:"reserve_1"`
+	Fee1     *Coin        `json:"fee_1"`
+	Scaler1  *bcs.Uint128 `json:"scaler_1"`
 
-	Reserve2 *Coin    `json:"reserve_2"`
-	Fee2     *Coin    `json:"fee_2"`
-	Scaler2  *Uint128 `json:"scaler_2"`
+	Reserve2 *Coin        `json:"reserve_2"`
+	Fee2     *Coin        `json:"fee_2"`
+	Scaler2  *bcs.Uint128 `json:"scaler_2"`
 
-	Reserve3 *Coin    `json:"reserve_3"`
-	Fee3     *Coin    `json:"fee_3"`
-	Scaler3  *Uint128 `json:"scaler_3"`
+	Reserve3 *Coin        `json:"reserve_3"`
+	Fee3     *Coin        `json:"fee_3"`
+	Scaler3  *bcs.Uint128 `json:"scaler_3"`
 }
 
 // AuxStable4PoolModuleName aux::stable_4pool
@@ -70,9 +72,9 @@ func (info *AuxClientConfig) Stable4Pool_CreatePool(
 			coin2,
 			coin3,
 		},
-		[]EntryFunctionArg{
-			NewUint128FromUint64(feeNumerator, 0),
-			NewUint128FromUint64(amp, 0),
+		[]*EntryFunctionArg{
+			EntryFunctionArg_Uint128(feeNumerator, 0),
+			EntryFunctionArg_Uint128(amp, 0),
 		},
 	)
 
@@ -111,12 +113,12 @@ func (info *AuxClientConfig) Router4Pool_AddLiquidity(
 			coin2,
 			coin3,
 		},
-		[]EntryFunctionArg{
-			JsonUint64(amount0),
-			JsonUint64(amount1),
-			JsonUint64(amount2),
-			JsonUint64(amount3),
-			JsonUint64(minLpAmount),
+		[]*EntryFunctionArg{
+			EntryFunctionArg_Uint64(amount0),
+			EntryFunctionArg_Uint64(amount1),
+			EntryFunctionArg_Uint64(amount2),
+			EntryFunctionArg_Uint64(amount3),
+			EntryFunctionArg_Uint64(minLpAmount),
 		},
 	)
 
@@ -156,12 +158,12 @@ func (info *AuxClientConfig) Router4Pool_RemoveLiquidityForCoin(
 			coin2,
 			coin3,
 		},
-		[]EntryFunctionArg{
-			JsonUint64(amount0ToWithdraw),
-			JsonUint64(amount1ToWithdraw),
-			JsonUint64(amount2ToWithdraw),
-			JsonUint64(amount3ToWithdraw),
-			JsonUint64(maxLpAmount),
+		[]*EntryFunctionArg{
+			EntryFunctionArg_Uint64(amount0ToWithdraw),
+			EntryFunctionArg_Uint64(amount1ToWithdraw),
+			EntryFunctionArg_Uint64(amount2ToWithdraw),
+			EntryFunctionArg_Uint64(amount3ToWithdraw),
+			EntryFunctionArg_Uint64(maxLpAmount),
 		},
 	)
 
@@ -197,8 +199,8 @@ func (info *AuxClientConfig) Router4Pool_RemoveLiquidity(
 			coin2,
 			coin3,
 		},
-		[]EntryFunctionArg{
-			JsonUint64(lpAmount),
+		[]*EntryFunctionArg{
+			EntryFunctionArg_Uint64(lpAmount),
 		},
 	)
 
@@ -239,13 +241,13 @@ func (info *AuxClientConfig) Router4Pool_SwapExactCoinForCoin(
 			coin2,
 			coin3,
 		},
-		[]EntryFunctionArg{
-			JsonUint64(amount0),
-			JsonUint64(amount1),
-			JsonUint64(amount2),
-			JsonUint64(amount3),
-			EntryFunctionArg_Uint8(outCoinIndex),
-			JsonUint64(minQuantityOut),
+		[]*EntryFunctionArg{
+			EntryFunctionArg_Uint64(amount0),
+			EntryFunctionArg_Uint64(amount1),
+			EntryFunctionArg_Uint64(amount2),
+			EntryFunctionArg_Uint64(amount3),
+			EntryFunctionArg_Uint8(uint8(outCoinIndex)),
+			EntryFunctionArg_Uint64(minQuantityOut),
 		},
 	)
 
@@ -286,13 +288,13 @@ func (info *AuxClientConfig) Router4Pool_SwapCoinForExactCoin(
 			coin2,
 			coin3,
 		},
-		[]EntryFunctionArg{
-			JsonUint64(requestAmount0),
-			JsonUint64(requestAmount1),
-			JsonUint64(requestAmount2),
-			JsonUint64(requestAmount3),
-			EntryFunctionArg_Uint8(inCoinIndex),
-			JsonUint64(maxQuantityIn),
+		[]*EntryFunctionArg{
+			EntryFunctionArg_Uint64(requestAmount0),
+			EntryFunctionArg_Uint64(requestAmount1),
+			EntryFunctionArg_Uint64(requestAmount2),
+			EntryFunctionArg_Uint64(requestAmount3),
+			EntryFunctionArg_Uint8(uint8(inCoinIndex)),
+			EntryFunctionArg_Uint64(maxQuantityIn),
 		},
 	)
 

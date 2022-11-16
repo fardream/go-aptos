@@ -68,10 +68,11 @@ func (info *AuxClientConfig) Vault_Deposit(sender Address, to Address, coinType 
 	}
 
 	tx := &Transaction{
-		Payload: NewEntryFunctionPayload(function, []*MoveTypeTag{coinType}, []EntryFunctionArg{
-			to,
-			JsonUint64(amount),
-		}),
+		Payload: NewEntryFunctionPayload(function, []*MoveTypeTag{coinType},
+			[]*EntryFunctionArg{
+				EntryFunctionArg_Address(to),
+				EntryFunctionArg_Uint64(amount),
+			}),
 	}
 
 	ApplyTransactionOptions(tx, options...)
@@ -86,7 +87,8 @@ func (info *AuxClientConfig) Vault_Withdraw(sender Address, coinType *MoveTypeTa
 	function := MustNewMoveFunctionTag(info.Address, AuxVaultModuleName, "withdraw")
 
 	tx := &Transaction{
-		Payload: NewEntryFunctionPayload(function, []*MoveTypeTag{coinType}, []EntryFunctionArg{JsonUint64(amount)}),
+		Payload: NewEntryFunctionPayload(function, []*MoveTypeTag{coinType},
+			[]*EntryFunctionArg{EntryFunctionArg_Uint64(amount)}),
 	}
 
 	ApplyTransactionOptions(tx, options...)

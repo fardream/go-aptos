@@ -67,8 +67,8 @@ func (info *AuxClientConfig) Amm_CreatePool(sender Address, coinX, coinY *MoveTy
 	playload := NewEntryFunctionPayload(
 		function,
 		[]*MoveTypeTag{coinX, coinY},
-		[]EntryFunctionArg{
-			JsonUint64(feeBps),
+		[]*EntryFunctionArg{
+			EntryFunctionArg_Uint64(feeBps),
 		},
 	)
 
@@ -91,8 +91,8 @@ func (info *AuxClientConfig) Amm_UpdateFee(sender Address, coinX, coinY *MoveTyp
 	playload := NewEntryFunctionPayload(
 		function,
 		[]*MoveTypeTag{coinX, coinY},
-		[]EntryFunctionArg{
-			JsonUint64(feeBps),
+		[]*EntryFunctionArg{
+			EntryFunctionArg_Uint64(feeBps),
 		},
 	)
 
@@ -112,10 +112,11 @@ func (info *AuxClientConfig) Amm_UpdateFee(sender Address, coinX, coinY *MoveTyp
 func (info *AuxClientConfig) Amm_SwapExactCoinForCoin(sender Address, coinX, coinY *MoveTypeTag, amountIn uint64, minAmountOut uint64, options ...TransactionOption) *Transaction {
 	function := MustNewMoveFunctionTag(info.Address, AuxAmmModuleName, "swap_exact_coin_for_coin_with_signer")
 
-	payload := NewEntryFunctionPayload(function, []*MoveTypeTag{coinX, coinY}, []EntryFunctionArg{
-		JsonUint64(amountIn),
-		JsonUint64(minAmountOut),
-	})
+	payload := NewEntryFunctionPayload(function, []*MoveTypeTag{coinX, coinY},
+		[]*EntryFunctionArg{
+			EntryFunctionArg_Uint64(amountIn),
+			EntryFunctionArg_Uint64(minAmountOut),
+		})
 
 	tx := &Transaction{
 		Payload: payload,
@@ -135,11 +136,12 @@ func (info *AuxClientConfig) Amm_SwapExactCoinForCoin(sender Address, coinX, coi
 func (info *AuxClientConfig) Amm_AddLiquidity(sender Address, coinX *MoveTypeTag, xAmount uint64, coinY *MoveTypeTag, yAmount uint64, maxSlippage uint64, options ...TransactionOption) *Transaction {
 	function := MustNewMoveFunctionTag(info.Address, AuxAmmModuleName, "add_liquidity")
 
-	payload := NewEntryFunctionPayload(function, []*MoveTypeTag{coinX, coinY}, []EntryFunctionArg{
-		JsonUint64(xAmount),
-		JsonUint64(yAmount),
-		JsonUint64(maxSlippage),
-	})
+	payload := NewEntryFunctionPayload(function, []*MoveTypeTag{coinX, coinY},
+		[]*EntryFunctionArg{
+			EntryFunctionArg_Uint64(xAmount),
+			EntryFunctionArg_Uint64(yAmount),
+			EntryFunctionArg_Uint64(maxSlippage),
+		})
 
 	tx := &Transaction{
 		Payload: payload,

@@ -109,8 +109,8 @@ func (info *AuxClientConfig) FakeCoin_RegisterAndMint(sender Address, fakeCoin A
 			[]*MoveTypeTag{
 				must(GetAuxFakeCoinType(info.Address, fakeCoin)),
 			},
-			[]EntryFunctionArg{
-				JsonUint64(amount),
+			[]*EntryFunctionArg{
+				EntryFunctionArg_Uint64(amount),
 			}),
 	}
 
@@ -152,8 +152,8 @@ func (info *AuxClientConfig) FakeCoin_Mint(sender Address, fakeCoin AuxFakeCoin,
 			[]*MoveTypeTag{
 				must(GetAuxFakeCoinType(info.Address, fakeCoin)),
 			},
-			[]EntryFunctionArg{
-				JsonUint64(amount),
+			[]*EntryFunctionArg{
+				EntryFunctionArg_Uint64(amount),
 			}),
 	}
 
@@ -174,8 +174,8 @@ func (info *AuxClientConfig) FakeCoin_Burn(sender Address, fakeCoin AuxFakeCoin,
 			[]*MoveTypeTag{
 				must(GetAuxFakeCoinType(info.Address, fakeCoin)),
 			},
-			[]EntryFunctionArg{
-				JsonUint64(amount),
+			[]*EntryFunctionArg{
+				EntryFunctionArg_Uint64(amount),
 			}),
 	}
 

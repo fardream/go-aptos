@@ -230,16 +230,3 @@ func (t *MoveTypeTag) Type() string {
 func (t *MoveTypeTag) Set(data string) error {
 	return parseMoveTypeTagInternal(data, t)
 }
-
-// ToBCS for MoveTypeTag.
-// Note move supports 8 types (see [MoveType]), therefore the first byte is 7, which is [MoveType_Struct]
-func (t *MoveTypeTag) ToBCS() []byte {
-	r := append([]byte{byte(MoveType_Struct)}, t.MoveModuleTag.ToBCS()...)
-	r = append(r, StringToBCS(t.Name)...)
-	r = append(r, ULEB128Encode(len(t.GenericTypeParameters))...)
-	for _, gt := range t.GenericTypeParameters {
-		r = append(r, gt.ToBCS()...)
-	}
-
-	return r
-}

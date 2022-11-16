@@ -3,19 +3,21 @@
 
 package aptos
 
+import "github.com/fardream/go-bcs/bcs"
+
 // AuxStable{{.N}}Pool is a pool with {{.N}} coins that priced at parity.
 type AuxStable{{.N}}Pool struct {
     /// FeeNumerator, denominator is 10^10
-    FeeNumerator    *Uint128 `json:"fee_numerator"`
+    FeeNumerator    *bcs.Uint128 `json:"fee_numerator"`
     /// BalancedReserve
-    BalancedReserve *Uint128 `json:"balanced_reserve"`
+    BalancedReserve *bcs.Uint128 `json:"balanced_reserve"`
     /// Amp
-    Amp             *Uint128 `json:"amp"`
+    Amp             *bcs.Uint128 `json:"amp"`
 
 {{range .Xis}}
     Reserve{{.I}} *Coin     `json:"reserve_{{.I}}"`
     Fee{{.I}}    *Coin    `json:"fee_{{.I}}"`
-    Scaler{{.I}}     *Uint128 `json:"scaler_{{.I}}"`
+    Scaler{{.I}}     *bcs.Uint128 `json:"scaler_{{.I}}"`
 {{end}}}
 
 // AuxStable{{.N}}PoolModuleName aux::stable_{{.N}}pool
@@ -51,9 +53,9 @@ func (info *AuxClientConfig) Stable{{.N}}Pool_CreatePool(
         []*MoveTypeTag{
         {{range .Xis}}    coin{{.I}},
         {{end}}},
-        []EntryFunctionArg{
-            NewUint128FromUint64(feeNumerator, 0),
-            NewUint128FromUint64(amp, 0),
+        []*EntryFunctionArg{
+            EntryFunctionArg_Uint128(feeNumerator, 0),
+            EntryFunctionArg_Uint128(amp, 0),
         },
     )
 
@@ -83,9 +85,9 @@ func (info *AuxClientConfig) Router{{.N}}Pool_AddLiquidity(
         []*MoveTypeTag{
         {{range .Xis}}    coin{{.I}},
         {{end}}},
-        []EntryFunctionArg {
-            {{range .Xis}}JsonUint64(amount{{.I}}),
-            {{end}}JsonUint64(minLpAmount),
+        []*EntryFunctionArg {
+            {{range .Xis}}EntryFunctionArg_Uint64(amount{{.I}}),
+            {{end}}EntryFunctionArg_Uint64(minLpAmount),
         },
     )
 
@@ -116,9 +118,9 @@ func (info *AuxClientConfig) Router{{.N}}Pool_RemoveLiquidityForCoin(
         []*MoveTypeTag{
         {{range .Xis}}    coin{{.I}},
         {{end}}},
-        []EntryFunctionArg {
-            {{range .Xis}}JsonUint64(amount{{.I}}ToWithdraw),
-            {{end}}JsonUint64(maxLpAmount),
+        []*EntryFunctionArg {
+            {{range .Xis}}EntryFunctionArg_Uint64(amount{{.I}}ToWithdraw),
+            {{end}}EntryFunctionArg_Uint64(maxLpAmount),
         },
     )
 
@@ -148,8 +150,8 @@ func (info *AuxClientConfig) Router{{.N}}Pool_RemoveLiquidity(
         []*MoveTypeTag{
         {{range .Xis}}    coin{{.I}},
         {{end}}},
-        []EntryFunctionArg {
-            JsonUint64(lpAmount),
+        []*EntryFunctionArg {
+            EntryFunctionArg_Uint64(lpAmount),
         },
     )
 
@@ -181,10 +183,10 @@ func (info *AuxClientConfig) Router{{.N}}Pool_SwapExactCoinForCoin(
         []*MoveTypeTag{
         {{range .Xis}}    coin{{.I}},
         {{end}}},
-        []EntryFunctionArg {
-            {{range .Xis}}JsonUint64(amount{{.I}}),
-            {{end}}EntryFunctionArg_Uint8(outCoinIndex),
-            JsonUint64(minQuantityOut),
+        []*EntryFunctionArg {
+            {{range .Xis}}EntryFunctionArg_Uint64(amount{{.I}}),
+            {{end}}EntryFunctionArg_Uint8(uint8(outCoinIndex)),
+            EntryFunctionArg_Uint64(minQuantityOut),
         },
     )
 
@@ -216,10 +218,10 @@ func (info *AuxClientConfig) Router{{.N}}Pool_SwapCoinForExactCoin(
         []*MoveTypeTag{
         {{range .Xis}}    coin{{.I}},
         {{end}}},
-        []EntryFunctionArg {
-            {{range .Xis}}JsonUint64(requestAmount{{.I}}),
-            {{end}}EntryFunctionArg_Uint8(inCoinIndex),
-            JsonUint64(maxQuantityIn),
+        []*EntryFunctionArg {
+            {{range .Xis}}EntryFunctionArg_Uint64(requestAmount{{.I}}),
+            {{end}}EntryFunctionArg_Uint8(uint8(inCoinIndex)),
+            EntryFunctionArg_Uint64(maxQuantityIn),
         },
     )
 
