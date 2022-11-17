@@ -51,11 +51,11 @@ func GetListPoolCmd() *cobra.Command {
 					continue
 				}
 				baseName := resourceType.GenericTypeParameters[0].String()
-				if baseCoin := known.GetCoinInfo(network, resourceType.GenericTypeParameters[0]); baseCoin != nil {
+				if baseCoin := known.GetCoinInfo(network, resourceType.GenericTypeParameters[0].Struct); baseCoin != nil {
 					baseName = baseCoin.Name
 				}
 				quoteName := resourceType.GenericTypeParameters[1].String()
-				if quoteCoin := known.GetCoinInfo(network, resourceType.GenericTypeParameters[1]); quoteCoin != nil {
+				if quoteCoin := known.GetCoinInfo(network, resourceType.GenericTypeParameters[1].Struct); quoteCoin != nil {
 					quoteName = quoteCoin.Name
 				}
 				fmt.Printf("found pool for %s: %d <-> %s: %d\n",

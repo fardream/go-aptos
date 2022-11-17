@@ -48,13 +48,13 @@ func (rw *warnPrinter) Printf(format string, a ...any) {
 	fmt.Printf("%s%s%s", redWarn.colorRed, s, redWarn.colorReset)
 }
 
-func parseCoinType(network aptos.Network, coinType string) (*aptos.MoveTypeTag, error) {
+func parseCoinType(network aptos.Network, coinType string) (*aptos.MoveStructTag, error) {
 	coinInfo := known.GetCoinInfoBySymbol(network, coinType)
 	if coinInfo != nil {
 		return coinInfo.TokenType.Type, nil
 	}
 
-	coin, err := aptos.ParseMoveTypeTag(coinType)
+	coin, err := aptos.ParseMoveStructTag(coinType)
 	if err != nil {
 		return nil, fmt.Errorf("cannot find %s on aptos %s as a known coin, and failed to parse as a move type: %w", coinType, network, err)
 	}

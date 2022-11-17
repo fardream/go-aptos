@@ -15,7 +15,7 @@ var data []byte
 
 // TokenType
 type TokenType struct {
-	Type *aptos.MoveTypeTag `json:"type"`
+	Type *aptos.MoveStructTag `json:"type"`
 }
 
 // HippoCoinRegistryEntry is the information contained in the hippo coin registry here
@@ -129,7 +129,7 @@ func init() {
 }
 
 // GetCoinInfo returns the hippo coin registry information for a given type. If the coin is not in the registry, return nil.
-func GetCoinInfo(network aptos.Network, typeTag *aptos.MoveTypeTag) *HippoCoinRegistryEntry {
+func GetCoinInfo(network aptos.Network, typeTag *aptos.MoveStructTag) *HippoCoinRegistryEntry {
 	coinForNetwork, ok := coinByNetworkByTypeName[network]
 	if !ok {
 		return nil

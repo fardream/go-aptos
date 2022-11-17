@@ -9,6 +9,7 @@ import (
 	"github.com/davecgh/go-spew/spew"
 
 	"github.com/fardream/go-aptos/aptos"
+	"github.com/fardream/go-bcs/bcs"
 )
 
 //go:embed test_data/test_tx.json
@@ -28,7 +29,7 @@ func TestTransactionWithInfo(t *testing.T) {
 }
 
 func TestTransaction_GetHash(t *testing.T) {
-	t.Skipf("Transaction_GetHash doesnt mathc the current value from chain")
+	// t.Skipf("Transaction_GetHash doesnt mathc the current value from chain")
 	// this is from test in test_data/test_tx_1.json
 	sender := aptos.MustParseAddress("0x767b7442b8547fa5cf50989b9b761760ca6687b83d1c23d3589a5ac8acb50639")
 	config, _ := aptos.GetAuxClientConfig(aptos.Devnet)
@@ -43,7 +44,7 @@ func TestTransaction_GetHash(t *testing.T) {
 		50000000,
 		50000000000,
 		0,
-		aptos.Uint128{},
+		bcs.Uint128{},
 		aptos.AuxClobMarketOrderType_Limit,
 		0,
 		false,
@@ -86,7 +87,7 @@ func TestLocalAccount_Sign(t *testing.T) {
 		50000000,
 		50000000000,
 		0,
-		aptos.Uint128{},
+		bcs.Uint128{},
 		aptos.AuxClobMarketOrderType_Limit,
 		0,
 		false,

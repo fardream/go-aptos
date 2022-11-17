@@ -12,6 +12,7 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 	"github.com/fardream/go-aptos/aptos"
+	"github.com/fardream/go-bcs/bcs"
 	"github.com/gorilla/websocket"
 )
 
@@ -230,7 +231,7 @@ func ExampleAuxClobMarketTrader() {
 				priceInt,
 				sizeInt,
 				0,
-				*aptos.NewUint128FromUint64(clienOrderId, 0),
+				*bcs.NewUint128FromUint64(clienOrderId, 0),
 				aptos.AuxClobMarketOrderType_Limit,
 				0,
 				false,
@@ -246,7 +247,7 @@ func ExampleAuxClobMarketTrader() {
 				if result.OrderStatus == aptos.AuxClobMarketOrderStatus_Placed {
 					trader.orderIds = append(trader.orderIds, result.OrderId.Big().String())
 					if len(trader.orderIds) >= 3 {
-						idToCancel := must(aptos.NewUint128(trader.orderIds[0]))
+						idToCancel := must(bcs.NewUint128(trader.orderIds[0]))
 						trader.orderIds = trader.orderIds[1:]
 						result, err := trader.CancelOrder(ctx, *idToCancel)
 						if err != nil {

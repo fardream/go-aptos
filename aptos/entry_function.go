@@ -4,121 +4,191 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+
+	"github.com/fardream/go-bcs/bcs"
 )
 
 // EntryFunctionPayload
 type EntryFunctionPayload struct {
-	Type          string                `json:"type"`
-	Function      *MoveFunctionTag      `json:"function"`
-	TypeArguments []*MoveTypeTag        `json:"type_arguments"`
-	Arguments     EntryFunctionArgSlice `json:"arguments"`
+	Function      *MoveFunctionTag    `json:"function"`
+	TypeArguments []*MoveTypeTag      `json:"type_arguments"`
+	Arguments     []*EntryFunctionArg `json:"arguments"`
 }
 
-// EntryFunctionArg is argument to entry function
-type EntryFunctionArg interface {
-	ToBCS() []byte
+// EntryFunctionArg is the argument to entry function.
+// This is kind of an enum, but on the wire actually
+// all bcs byte vectors.
+// This means the values are first bcs serialized to vector of bytes.
+// Then the vector of bytes are serialized.
+type EntryFunctionArg struct {
+	Bool    *bool
+	Uint8   *uint8
+	Uint64  *JsonUint64
+	Uint128 *bcs.Uint128
+	Address *Address
+	Signer  *struct{}
+	Vector  *[]byte
+}
+
+var (
+	_ bcs.Marshaler    = (*EntryFunctionArg)(nil)
+	_ json.Marshaler   = (*EntryFunctionArg)(nil)
+	_ json.Unmarshaler = (*EntryFunctionArg)(nil)
+)
+
+func marshalWithByteLength[T any](v T) ([]byte, error) {
+	if firstBytes, err := bcs.Marshal(v); err != nil {
+		return nil, err
+	} else {
+		return bcs.Marshal(firstBytes)
+	}
+}
+
+// MarshalBCS customizes bcs Marshal for [EntryFunctionArg].
+// This method first bcs serialize the non-nil value, then
+// serialize the resulted byte vector (simply prepending the length with ULEB128 encoding).
+func (m EntryFunctionArg) MarshalBCS() ([]byte, error) {
+	switch {
+	case m.Bool != nil:
+		return marshalWithByteLength(m.Bool)
+	case m.Uint8 != nil:
+		return marshalWithByteLength(m.Uint8)
+	case m.Uint64 != nil:
+		return marshalWithByteLength(m.Uint64)
+	case m.Uint128 != nil:
+		return marshalWithByteLength(m.Uint128)
+	case m.Address != nil:
+		return marshalWithByteLength(m.Address)
+	case m.Vector != nil:
+		return bcs.Marshal(m.Vector)
+	default:
+		return nil, fmt.Errorf("unset arg")
+	}
+}
+
+// reset sets all values to nil.
+func (m *EntryFunctionArg) reset() {
+	m.Bool = nil
+	m.Uint8 = nil
+	m.Uint64 = nil
+	m.Uint128 = nil
+	m.Address = nil
+	m.Signer = nil
+	m.Vector = nil
+}
+
+func (m EntryFunctionArg) MarshalJSON() ([]byte, error) {
+	switch {
+	case m.Bool != nil:
+		return json.Marshal(*m.Bool)
+	case m.Address != nil:
+		return json.Marshal(*m.Address)
+	case m.Uint8 != nil:
+		return json.Marshal(*m.Uint8)
+	case m.Uint64 != nil:
+		return json.Marshal(*m.Uint64)
+	case m.Uint128 != nil:
+		return json.Marshal(*m.Uint128)
+	case m.Vector != nil:
+		return json.Marshal(*m.Vector)
+	}
+
+	return nil, fmt.Errorf("unsupported: %v", m)
 }
 
 // NewEntryFunctionPayload
-func NewEntryFunctionPayload(functionName *MoveFunctionTag, typeArguments []*MoveTypeTag, arguments []EntryFunctionArg) *EntryFunctionPayload {
+func NewEntryFunctionPayload(
+	functionName *MoveFunctionTag,
+	typeArguments []*MoveStructTag,
+	arguments []*EntryFunctionArg,
+) *TransactionPayload {
 	r := &EntryFunctionPayload{
-		Type:          "entry_function_payload",
-		Function:      functionName,
-		TypeArguments: typeArguments,
-		Arguments:     arguments,
+		Function: functionName,
+		TypeArguments: mapSlices(typeArguments, func(t *MoveStructTag) *MoveTypeTag {
+			return &MoveTypeTag{
+				Struct: t,
+			}
+		}),
+		Arguments: arguments,
 	}
 
 	if r.TypeArguments == nil {
 		r.TypeArguments = make([]*MoveTypeTag, 0)
 	}
 	if r.Arguments == nil {
-		r.Arguments = make([]EntryFunctionArg, 0)
+		r.Arguments = make([]*EntryFunctionArg, 0)
 	}
+
+	return &TransactionPayload{
+		EntryFunctionPayload: r,
+	}
+}
+
+// EntryFunctionArg_Uint8 represents u8 in move, equivalent to a byte
+func EntryFunctionArg_Uint8(v uint8) *EntryFunctionArg {
+	r := &EntryFunctionArg{
+		Uint8: new(uint8),
+	}
+
+	*r.Uint8 = v
 
 	return r
 }
 
-// EntryFunctionArg_Uint8 represents u8 in move, equivalent to a byte
-type EntryFunctionArg_Uint8 uint8
-
-var _ EntryFunctionArg = (*EntryFunctionArg_Uint8)(nil)
-
-func (u *EntryFunctionArg_Uint8) UnmarshalJSON(data []byte) error {
-	var v uint8
-	if err := json.Unmarshal(data, &v); err != nil {
-		return err
-	}
-
-	*u = EntryFunctionArg_Uint8(v)
-
-	return nil
-}
-
-func (u EntryFunctionArg_Uint8) MarshalJSON() ([]byte, error) {
-	return json.Marshal(uint8(u))
-}
-
-func (u EntryFunctionArg_Uint8) ToBCS() []byte {
-	return []byte{byte(u)}
-}
-
 // EntryFunctionArg_Uint64 is equivalent to uint64, or u64 in move.
-type EntryFunctionArg_Uint64 = JsonUint64
-
-type EntryFunctionArg_String string
-
-var _ EntryFunctionArg = (*EntryFunctionArg_String)(nil)
-
-func (s EntryFunctionArg_String) ToBCS() []byte {
-	return StringToBCS(string(s))
-}
-
-func (s EntryFunctionArg_String) MarshalJSON() ([]byte, error) {
-	return json.Marshal(string(s))
-}
-
-func (s *EntryFunctionArg_String) UnmarshalJSON(data []byte) error {
-	var str string
-	if err := json.Unmarshal(data, &str); err != nil {
-		return nil
+func EntryFunctionArg_Uint64(v uint64) *EntryFunctionArg {
+	r := &EntryFunctionArg{
+		Uint64: new(JsonUint64),
 	}
 
-	*s = EntryFunctionArg_String(str)
+	*r.Uint64 = JsonUint64(v)
 
-	return nil
+	return r
+}
+
+// EntryFunctionArg_Uint128 creates a new [EntryFunctionArg] with Uint128 set from lo/hi [uint64].
+func EntryFunctionArg_Uint128(lo uint64, hi uint64) *EntryFunctionArg {
+	r := &EntryFunctionArg{
+		Uint128: new(bcs.Uint128),
+	}
+
+	*r.Uint128 = *bcs.NewUint128FromUint64(lo, hi)
+
+	return r
+}
+
+func EntryFunctionArg_String(v string) *EntryFunctionArg {
+	r := &EntryFunctionArg{
+		Vector: new([]byte),
+	}
+
+	*r.Vector = append([]byte{}, []byte(v)...)
+
+	return r
 }
 
 // EntryFunctionArg_Bool
-type EntryFunctionArg_Bool bool
-
-var _ EntryFunctionArg = (*EntryFunctionArg_Bool)(nil)
-
-func (b EntryFunctionArg_Bool) ToBCS() []byte {
-	if bool(b) {
-		return []byte{1}
-	} else {
-		return []byte{0}
-	}
-}
-
-func (b EntryFunctionArg_Bool) MarshalJSON() ([]byte, error) {
-	return json.Marshal(bool(b))
-}
-
-func (b *EntryFunctionArg_Bool) UnmarshalJSON(data []byte) error {
-	var bt bool
-	if err := json.Unmarshal(data, &bt); err != nil {
-		return err
+func EntryFunctionArg_Bool(v bool) *EntryFunctionArg {
+	r := &EntryFunctionArg{
+		Bool: new(bool),
 	}
 
-	*b = EntryFunctionArg_Bool(bt)
+	*r.Bool = v
 
-	return nil
+	return r
 }
 
-// EntryFunctionArgSlice
-//
-// Slices of [EntryFunctionArg] need special handling during serialization and deserialization.
+func EntryFunctionArg_Address(v Address) *EntryFunctionArg {
+	r := &EntryFunctionArg{
+		Address: new(Address),
+	}
+
+	*r.Address = v
+
+	return r
+}
+
+// UnmarshalJSON for [EntryFunctionArg]. json doesn't have type information, so the process uses a series of heuristics.
 //
 //   - deserializing response from rest api either in json or bcs is difficult without knowing the types of the elements before
 //     hand.
@@ -129,87 +199,37 @@ func (b *EntryFunctionArg_Bool) UnmarshalJSON(data []byte) error {
 //
 //   - during serialization, the element of entry function argument slice is prefixed with the length of the
 //     serialized bytes. For example, instead of serialize true to 01, serialize it to 0101.
-type EntryFunctionArgSlice []EntryFunctionArg
-
-var _ json.Unmarshaler = (*EntryFunctionArgSlice)(nil)
-
-func (s *EntryFunctionArgSlice) UnmarshalJSON(data []byte) error {
-	var objects []json.RawMessage
-	if err := json.Unmarshal(data, &objects); err != nil {
-		return err
+func (s *EntryFunctionArg) UnmarshalJSON(data []byte) error {
+	var j JsonUint64
+	if err := j.UnmarshalJSON(data); err == nil {
+		s.reset()
+		s.Uint64 = new(JsonUint64)
+		*s.Uint64 = j
+		return nil
 	}
-
-	result := []EntryFunctionArg{}
-
-	for _, msg := range objects {
-		var j JsonUint64
-		if err := j.UnmarshalJSON(msg); err == nil {
-			result = append(result, j)
-			continue
-		}
-		var b EntryFunctionArg_Bool
-		if err := b.UnmarshalJSON(msg); err == nil {
-			result = append(result, b)
-			continue
-		}
-		var str string
-		if err := json.Unmarshal(msg, &str); err == nil {
-			if strings.HasPrefix(str, "0x") {
-				addr, err := ParseAddress(str)
-				if err == nil {
-					result = append(result, addr)
-				}
-				continue
+	var b bool
+	if err := json.Unmarshal(data, &b); err == nil {
+		s.reset()
+		s.Bool = new(bool)
+		*s.Bool = b
+		return nil
+	}
+	var str string
+	if err := json.Unmarshal(data, &str); err == nil {
+		if strings.HasPrefix(str, "0x") {
+			addr, err := ParseAddress(str)
+			if err == nil {
+				s.reset()
+				s.Address = new(Address)
+				*s.Address = addr
+				return nil
 			}
-
-			result = append(result, EntryFunctionArg_String(str))
-			continue
 		}
-
-		return fmt.Errorf("failed to unmarshal %s", string(msg))
+		s.reset()
+		s.Vector = new([]byte)
+		*s.Vector = append(*s.Vector, []byte(str)...)
+		return nil
 	}
 
-	*s = result
-
-	return nil
-}
-
-func (s EntryFunctionArgSlice) ToBCS() []byte {
-	r := ULEB128Encode(len(s))
-	for _, a := range s {
-		ab := a.ToBCS()
-		r = append(r, ULEB128Encode(len(ab))...)
-		r = append(r, ab...)
-	}
-
-	return r
-}
-
-type EntryFunctionArgVector[T EntryFunctionArg] []T
-
-func (v EntryFunctionArgVector[T]) ToBCS() []byte {
-	r := ULEB128Encode(len(v))
-	for _, x := range v {
-		r = append(r, x.ToBCS()...)
-	}
-
-	return r
-}
-
-// ToBCS encodes EntryFunctionPayload to bytes.
-//   - first byte is 2, indicating [EntryFunctionPayload]
-//   - serialize function name
-//   - serialize generic type arguments
-//   - serialize the arguments. Note arguments are serialized first of number of arguments, then each argument needs the length of their serialized bytes as prefix.
-func (f EntryFunctionPayload) ToBCS() []byte {
-	r := []byte{2}
-	r = append(r, f.Function.ToBCS()...)
-	r = append(r, ULEB128Encode(len(f.TypeArguments))...)
-	for _, t := range f.TypeArguments {
-		r = append(r, t.ToBCS()...)
-	}
-
-	r = append(r, f.Arguments.ToBCS()...)
-
-	return r
+	return fmt.Errorf("failed to unmarshal %s", string(data))
 }

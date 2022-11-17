@@ -18,7 +18,7 @@ func ExampleClient_GetEventsByCreationNumber() {
 
 	fakeEth, _ := aptos.GetAuxFakeCoinCoinType(auxConfig.Address, aptos.AuxFakeCoin_ETH)
 	fakeUsdc, _ := aptos.GetAuxFakeCoinCoinType(auxConfig.Address, aptos.AuxFakeCoin_USDC)
-	marketType := aptos.MustNewMoveTypeTag(auxConfig.Address, "clob_market", "Market", []*aptos.MoveTypeTag{fakeEth, fakeUsdc})
+	marketType := aptos.MustNewMoveStructTag(auxConfig.Address, "clob_market", "Market", []*aptos.MoveStructTag{fakeEth, fakeUsdc})
 
 	market, err := aptos.GetAccountResourceWithType[aptos.AuxClobMarket](context.Background(), client, auxConfig.Address, marketType, 0)
 	if err != nil {
@@ -53,7 +53,7 @@ func ExampleClient_GetEventsByEventHandler() {
 
 	fakeEth, _ := aptos.GetAuxFakeCoinCoinType(auxConfig.Address, aptos.AuxFakeCoin_ETH)
 	fakeUsdc, _ := aptos.GetAuxFakeCoinCoinType(auxConfig.Address, aptos.AuxFakeCoin_USDC)
-	marketType := aptos.MustNewMoveTypeTag(auxConfig.Address, "clob_market", "Market", []*aptos.MoveTypeTag{fakeEth, fakeUsdc})
+	marketType := aptos.MustNewMoveStructTag(auxConfig.Address, "clob_market", "Market", []*aptos.MoveStructTag{fakeEth, fakeUsdc})
 
 	resp, err := client.GetEventsByEventHandler(context.Background(), &aptos.GetEventsByEventHandlerRequest{
 		EventHandler: marketType,

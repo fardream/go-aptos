@@ -84,12 +84,6 @@ func MustNewMoveModuleTag(address Address, module string) *MoveModuleTag {
 	return must(NewMoveModuleTag(address, module))
 }
 
-var _ EntryFunctionArg = (*MoveModuleTag)(nil)
-
-func (m MoveModuleTag) ToBCS() []byte {
-	return append(m.Address[:], StringToBCS(m.Module)...)
-}
-
 func (m *MoveModuleTag) Set(str string) error {
 	return parseMoveModuleTagInternal(str, m)
 }

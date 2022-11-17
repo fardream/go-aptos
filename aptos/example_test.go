@@ -14,6 +14,7 @@ import (
 	"github.com/gorilla/websocket"
 
 	"github.com/fardream/go-aptos/aptos"
+	"github.com/fardream/go-bcs/bcs"
 )
 
 // This is an example of creating 5 traders, to trade on Fake AUX/ Fake USDC Exchange.
@@ -200,7 +201,7 @@ func Example() {
 				priceInt,
 				sizeInt,
 				0,
-				aptos.Uint128{},
+				bcs.Uint128{},
 				aptos.AuxClobMarketOrderType_Limit,
 				0,
 				false,

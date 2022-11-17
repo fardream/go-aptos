@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/fardream/go-aptos/aptos"
+	"github.com/fardream/go-bcs/bcs"
 )
 
 func GetPlaceClobOrderCmd() *cobra.Command {
@@ -55,7 +56,7 @@ To buy 0.5 BTC at a price of 19000 USDC, price should be 19,000,000,000, and the
 	buildCmd := func(isBuy bool) func(*cobra.Command, []string) {
 		isBid := isBuy
 		return func(c *cobra.Command, s []string) {
-			args.UpdateProfileForCmd(c)
+			args.UpdateProfileForCmd(cmd)
 			configFile, _ := getConfigFileLocation()
 			configs := getOrPanic(aptos.ParseAptosConfigFile(getOrPanic(os.ReadFile(configFile))))
 			if configs.Profiles == nil {
@@ -91,7 +92,7 @@ To buy 0.5 BTC at a price of 19000 USDC, price should be 19,000,000,000, and the
 				limitPrice,
 				quantity,
 				0,
-				aptos.Uint128{},
+				bcs.Uint128{},
 				aptos.AuxClobMarketOrderType_Limit,
 				0,
 				false,

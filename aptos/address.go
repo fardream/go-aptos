@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/fardream/go-bcs/bcs"
 	"golang.org/x/crypto/sha3"
 )
 
@@ -119,8 +120,8 @@ func (a Address) Type() string {
 	return "aptos-address"
 }
 
-var _ EntryFunctionArg = (*Address)(nil)
+var _ bcs.Marshaler = (*Address)(nil)
 
-func (a Address) ToBCS() []byte {
-	return a[:]
+func (a Address) MarshalBCS() ([]byte, error) {
+	return a[:], nil
 }

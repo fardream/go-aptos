@@ -4,6 +4,7 @@ import (
 	"crypto/ed25519"
 	"encoding/json"
 
+	"github.com/fardream/go-bcs/bcs"
 	"golang.org/x/crypto/sha3"
 )
 
@@ -15,14 +16,14 @@ type Transaction struct {
 	// SequenceNumber of the transaction for the sender.
 	// transactions with sequence number less than the curernt on chain sequence number for address will be rejected.
 	SequenceNumber JsonUint64 `json:"sequence_number"`
+	// Payload
+	Payload *TransactionPayload `json:"payload"`
 	// MaxGasAmount
 	MaxGasAmount JsonUint64 `json:"max_gas_amount"`
 	// UnitGasPrice
 	GasUnitPrice JsonUint64 `json:"gas_unit_price"`
 	// ExpirationTimestampSecs
 	ExpirationTimestampSecs JsonUint64 `json:"expiration_timestamp_secs"`
-	// Payload
-	Payload *EntryFunctionPayload `json:"payload"`
 
 	// chain id - this is not serialized into json for payload
 	ChainId uint8 `json:"-"`
@@ -67,17 +68,12 @@ func sha3_Sum256Slice(data []byte) []byte {
 // [doc on aptos.dev]: https://aptos.dev/guides/creating-a-signed-transaction#signing-message
 // [implementation in typescript]: https://github.com/aptos-labs/aptos-core/blob/ef6d3f45dfaeafcd76aa189b855d37a408a8e85e/ecosystem/typescript/sdk/src/transaction_builder/builder.ts#L69-L89
 func EncodeTransaction(tx *Transaction) []byte {
-	var encoded []byte
-	encoded = append(encoded, rawTransactionPrefix...)
-	encoded = append(encoded, tx.Sender.ToBCS()...)
-	encoded = append(encoded, tx.SequenceNumber.ToBCS()...)
-	encoded = append(encoded, tx.Payload.ToBCS()...)
-	encoded = append(encoded, tx.MaxGasAmount.ToBCS()...)
-	encoded = append(encoded, tx.GasUnitPrice.ToBCS()...)
-	encoded = append(encoded, tx.ExpirationTimestampSecs.ToBCS()...)
-	encoded = append(encoded, tx.ChainId)
+	txBytes, err := bcs.Marshal(tx)
+	if err != nil {
+		panic(err)
+	}
 
-	return encoded
+	return append(rawTransactionPrefix, txBytes...)
 }
 
 // GetHash get the hash of the transaction that can be used to look up the transaction on chain.
@@ -89,10 +85,10 @@ func EncodeTransaction(tx *Transaction) []byte {
 //
 // [here]: https://fullnode.mainnet.aptoslabs.com/v1/spec#/operations/get_transaction_by_hash
 func (tx *Transaction) GetHash() []byte {
-	signingBytes := EncodeTransaction(tx)[32:]
-	prefixBytes := []byte("RawTransaction")
-	hashed := sha3.Sum256(append(prefixBytes, signingBytes...))
-
+	signingBytes := EncodeTransaction(tx)
+	// prefixBytes := []byte("RawTransaction")
+	// hashed := sha3.Sum256(append(prefixBytes, signingBytes...))
+	hashed := sha3.Sum256(signingBytes)
 	return hashed[:]
 }
 

@@ -3,7 +3,11 @@ package aptos
 import (
 	"context"
 	"fmt"
+
+	"github.com/fardream/go-bcs/bcs"
 )
+
+var zeroUint128 bcs.Uint128
 
 //go:generate stringer -type AuxClobMarketOrderStatus -linecomment
 
@@ -22,8 +26,8 @@ const (
 
 // AuxClobMarketTrader contains the market state, a client to aptos/aux,
 type AuxClobMarketTrader struct {
-	baseCoin  *MoveTypeTag
-	quoteCoin *MoveTypeTag
+	baseCoin  *MoveStructTag
+	quoteCoin *MoveStructTag
 
 	// OriginalState contains the state of the market when the AuxClobMarketTrader first start trading.
 	// This is useful to monitor the event queues to check if an order is filled or cancelled.
@@ -48,7 +52,7 @@ func (counter *AuxClobMarketEventCounter) FillFromAuxClobMarket(market *AuxClobM
 }
 
 // NewAuxClobMarketTrader creates a new trader.
-func NewAuxClobMarketTrader(ctx context.Context, auxClient *AuxClient, baseCoin, quoteCoin *MoveTypeTag) (*AuxClobMarketTrader, error) {
+func NewAuxClobMarketTrader(ctx context.Context, auxClient *AuxClient, baseCoin, quoteCoin *MoveStructTag) (*AuxClobMarketTrader, error) {
 	originalState, err := auxClient.GetClobMarket(ctx, baseCoin, quoteCoin, 0)
 	if err != nil {
 		return nil, err
@@ -77,9 +81,9 @@ type AuxClobMarketPlaceOrderResult struct {
 	RawTransaction *TransactionWithInfo
 
 	// OrderId for this order
-	OrderId *Uint128
+	OrderId *bcs.Uint128
 	// ClientOrderId if there is any. Otherwise this will be 0.
-	ClientOrderId *Uint128
+	ClientOrderId *bcs.Uint128
 	// Status of the order
 	OrderStatus AuxClobMarketOrderStatus
 
@@ -121,7 +125,7 @@ func (trader *AuxClobMarketTrader) PlaceOrder(
 	limitPrice uint64,
 	quantity uint64,
 	auxToBurnPerLot uint64,
-	clientOrderId Uint128,
+	clientOrderId bcs.Uint128,
 	orderType AuxClobMarketOrderType,
 	ticksToSlide uint64,
 	directionAggressive bool,
@@ -169,7 +173,7 @@ func (trader *AuxClobMarketTrader) PlaceOrder(
 	}
 
 	result.Events = FilterAuxClobMarketOrderEvent(txInfo.Events, trader.auxClient.config.Address, false, true)
-	result.ClientOrderId = &Uint128{}
+	result.ClientOrderId = &bcs.Uint128{}
 	*result.ClientOrderId = clientOrderId
 
 findOrderIdLoop:
@@ -181,7 +185,7 @@ findOrderIdLoop:
 			if clientOrderId.Cmp(&placedEvent.ClientOrderId) != 0 {
 				continue findOrderIdLoop
 			}
-			result.OrderId = &Uint128{}
+			result.OrderId = &bcs.Uint128{}
 			*result.OrderId = placedEvent.OrderId
 
 			break findOrderIdLoop
@@ -191,7 +195,7 @@ findOrderIdLoop:
 				continue findOrderIdLoop
 			}
 			if result.OrderId == nil {
-				result.OrderId = &Uint128{}
+				result.OrderId = &bcs.Uint128{}
 				*result.OrderId = fill.OrderId
 			}
 			if fill.RemainingQuantity == 0 {
@@ -205,7 +209,7 @@ findOrderIdLoop:
 				continue findOrderIdLoop
 			}
 			if result.OrderId == nil {
-				result.OrderId = &Uint128{}
+				result.OrderId = &bcs.Uint128{}
 				*result.OrderId = cancel.OrderId
 			}
 			result.OrderStatus = AuxClobMarketOrderStatus_Cancelled
@@ -232,7 +236,7 @@ type AuxClobMarketCancelOrderResult struct {
 // Cancel an order
 func (trader *AuxClobMarketTrader) CancelOrder(
 	ctx context.Context,
-	orderId Uint128,
+	orderId bcs.Uint128,
 	options ...TransactionOption,
 ) (*AuxClobMarketCancelOrderResult, error) {
 	tx := trader.auxClient.config.ClobMarket_CancelOrder(trader.auxClient.userAddress, trader.baseCoin, trader.quoteCoin, orderId, options...)
@@ -261,7 +265,7 @@ func (trader *AuxClobMarketTrader) CancelOrder(
 
 type AuxClobMarketCancelAllResult struct {
 	RawTransation     *TransactionWithInfo
-	CancelledOrderIds []Uint128
+	CancelledOrderIds []bcs.Uint128
 }
 
 func (trader *AuxClobMarketTrader) CancelAll(ctx context.Context, options ...TransactionOption) (*AuxClobMarketCancelAllResult, error) {

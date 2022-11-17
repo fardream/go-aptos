@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/fardream/go-aptos/aptos"
+	"github.com/fardream/go-bcs/bcs"
 )
 
 const testUserMenmonic = "escape summer cupboard disagree coach mother permit sugar short excite road smoke"
@@ -23,9 +24,9 @@ func TestClient_EncodeSubmission(t *testing.T) {
 	t.Logf("max gas is %s", hex.EncodeToString(aptos.JsonUint64(20000).ToBCS()))
 	t.Logf("sequence is %s", hex.EncodeToString(aptos.JsonUint64(0).ToBCS()))
 	t.Logf("argument 1 is %s", hex.EncodeToString(aptos.JsonUint64(10000000000).ToBCS()))
-	t.Logf("module name fake_coin is %s", hex.EncodeToString(aptos.StringToBCS("fake_coin")))
-	t.Logf("function name mint is %s", hex.EncodeToString(aptos.StringToBCS("mint")))
-	t.Logf("type name USDC is %s", hex.EncodeToString(aptos.StringToBCS("USDC")))
+	t.Logf("module name fake_coin is %s", hex.EncodeToString(bcs.MustMarshal("fake_coin")))
+	t.Logf("function name mint is %s", hex.EncodeToString(bcs.MustMarshal("mint")))
+	t.Logf("type name USDC is %s", hex.EncodeToString(bcs.MustMarshal("USDC")))
 
 	tx := &aptos.Transaction{
 		Sender:                  account.Address,
@@ -35,8 +36,8 @@ func TestClient_EncodeSubmission(t *testing.T) {
 		SequenceNumber:          aptos.JsonUint64(0),
 		Payload: aptos.NewEntryFunctionPayload(
 			aptos.MustNewMoveFunctionTag(config.Address, "fake_coin", "mint"),
-			[]*aptos.MoveTypeTag{aptos.MustNewMoveTypeTag(moduleAddress, "fake_coin", "USDC", nil)},
-			[]aptos.EntryFunctionArg{aptos.JsonUint64(10000000000)},
+			[]*aptos.MoveStructTag{aptos.MustNewMoveStructTag(moduleAddress, "fake_coin", "USDC", nil)},
+			[]*aptos.EntryFunctionArg{aptos.EntryFunctionArg_Uint64(10000000000)},
 		),
 		ChainId: aptos.GetChainIdForNetwork(aptos.Testnet),
 	}
