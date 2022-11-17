@@ -10,7 +10,7 @@ type Event[T any] struct {
 	// This is monotonically increasing without any gaps.
 	SequenceNumber JsonUint64 `json:"sequence_number"`
 	// Type of the event
-	Type MoveTypeTag `json:"type"`
+	Type MoveStructTag `json:"type"`
 	// Data of the event
 	Data *T `json:"data"`
 }

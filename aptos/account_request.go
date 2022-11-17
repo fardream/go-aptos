@@ -15,7 +15,7 @@ type AccountModule struct {
 
 // AccountResource includes the type and json encoding of the data.
 type AccountResource struct {
-	Type *MoveTypeTag    `json:"type"`
+	Type *MoveStructTag  `json:"type"`
 	Data json.RawMessage `json:"data,omitempty"`
 }
 
@@ -90,9 +90,9 @@ func (client *Client) GetAccountResource(ctx context.Context, request *GetAccoun
 type GetAccountResourceRequest struct {
 	GetRequest
 
-	Address       Address      `url:"-"`
-	LedgerVersion *JsonUint64  `url:"ledger_version,omitempty"`
-	Type          *MoveTypeTag `url:"-"`
+	Address       Address        `url:"-"`
+	LedgerVersion *JsonUint64    `url:"ledger_version,omitempty"`
+	Type          *MoveStructTag `url:"-"`
 }
 
 func (r *GetAccountResourceRequest) PathSegments() ([]string, error) {
@@ -116,7 +116,7 @@ type GetAccountResourceResponse struct {
 // This is equivalent of calling [Client.GetAccountResource], then marshal the response into the type.
 //
 // This is a function since golang doesn't support generic method.
-func GetAccountResourceWithType[T any](ctx context.Context, client *Client, address Address, moveType *MoveTypeTag, ledgerVersion uint64) (*T, error) {
+func GetAccountResourceWithType[T any](ctx context.Context, client *Client, address Address, moveType *MoveStructTag, ledgerVersion uint64) (*T, error) {
 	request := &GetAccountResourceRequest{
 		Address: address,
 		Type:    moveType,

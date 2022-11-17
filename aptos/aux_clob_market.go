@@ -35,8 +35,8 @@ type AuxClobMarket struct {
 }
 
 // MarketType provides the market for a pair of currencies
-func (info *AuxClientConfig) MarketType(baseCoin *MoveTypeTag, quoteCoin *MoveTypeTag) (*MoveTypeTag, error) {
-	return NewMoveTypeTag(info.Address, "clob_market", "Market", []*MoveTypeTag{baseCoin, quoteCoin})
+func (info *AuxClientConfig) MarketType(baseCoin *MoveStructTag, quoteCoin *MoveStructTag) (*MoveStructTag, error) {
+	return NewMoveStructTag(info.Address, "clob_market", "Market", []*MoveStructTag{baseCoin, quoteCoin})
 }
 
 // AuxClobMarket_Level2Event_Level is price/quantity in an aux level 2 event
@@ -223,7 +223,7 @@ func (info *AuxClientConfig) ClobMarket_PlaceOrder(
 	sender Address,
 	isBid bool,
 	baseCoin,
-	quoteCoin *MoveTypeTag,
+	quoteCoin *MoveStructTag,
 	limitPrice uint64,
 	quantity uint64,
 	auxToBurnPerLot uint64,
@@ -240,7 +240,7 @@ func (info *AuxClientConfig) ClobMarket_PlaceOrder(
 		Uint128: new(bcs.Uint128),
 	}
 	*orderIdArg.Uint128 = clientOrderId
-	payload := NewEntryFunctionPayload(function, []*MoveTypeTag{baseCoin, quoteCoin},
+	payload := NewEntryFunctionPayload(function, []*MoveStructTag{baseCoin, quoteCoin},
 		[]*EntryFunctionArg{
 			// sender: &signer, // sender is the user who initiates the trade (can also be the vault_account_owner itself) on behalf of vault_account_owner. Will only succeed if sender is the creator of the account, or on the access control list of the account published under vault_account_owner address
 			EntryFunctionArg_Address(sender),               // vault_account_owner: address, // vault_account_owner is, from the module's internal perspective, the address that actually makes the trade. It will be the actual account that has changes in balance (fee, volume tracker, etc is all associated with vault_account_owner, and independent of sender (i.e. delegatee))
@@ -267,11 +267,11 @@ func (info *AuxClientConfig) ClobMarket_PlaceOrder(
 
 // ClobMarket_LoadMarketIntoEvent constructs a transaction to load price level and total quantities of each price level into an event.
 // This is useful if the price/quantity of the market is needed since the market is stored on [TableWithLength] and is cumbersome to query.
-func (info *AuxClientConfig) ClobMarket_LoadMarketIntoEvent(baseCoin, quoteCoin *MoveTypeTag, options ...TransactionOption) *Transaction {
+func (info *AuxClientConfig) ClobMarket_LoadMarketIntoEvent(baseCoin, quoteCoin *MoveStructTag, options ...TransactionOption) *Transaction {
 	function := MustNewMoveFunctionTag(info.Address, AuxClobMarketModuleName, "load_market_into_event")
 	payload := NewEntryFunctionPayload(
 		function,
-		[]*MoveTypeTag{baseCoin, quoteCoin},
+		[]*MoveStructTag{baseCoin, quoteCoin},
 		[]*EntryFunctionArg{},
 	)
 
@@ -288,11 +288,11 @@ func (info *AuxClientConfig) ClobMarket_LoadMarketIntoEvent(baseCoin, quoteCoin 
 	return tx
 }
 
-func (info *AuxClientConfig) ClobMarket_LoadAllOrdersIntoEvent(baseCoin, quoteCoin *MoveTypeTag, options ...TransactionOption) *Transaction {
+func (info *AuxClientConfig) ClobMarket_LoadAllOrdersIntoEvent(baseCoin, quoteCoin *MoveStructTag, options ...TransactionOption) *Transaction {
 	function := MustNewMoveFunctionTag(info.Address, AuxClobMarketModuleName, "load_all_orders_into_event")
 	payload := NewEntryFunctionPayload(
 		function,
-		[]*MoveTypeTag{baseCoin, quoteCoin},
+		[]*MoveStructTag{baseCoin, quoteCoin},
 		[]*EntryFunctionArg{},
 	)
 
@@ -315,11 +315,11 @@ func (info *AuxClientConfig) ClobMarket_LoadAllOrdersIntoEvent(baseCoin, quoteCo
 // This requires (assuming base coin has decimal of b)
 //   - lot size * tick size / 10^b > 0  (the minimal quote coin quantity must be greater than zero)
 //   - lot size * tick size % 10^b == 0 (the minimal quote coin quantity must be whole integers)
-func (info *AuxClientConfig) ClobMarket_CreateMarket(sender Address, baseCoin, quoteCoin *MoveTypeTag, lotSize, tickSize uint64, options ...TransactionOption) *Transaction {
+func (info *AuxClientConfig) ClobMarket_CreateMarket(sender Address, baseCoin, quoteCoin *MoveStructTag, lotSize, tickSize uint64, options ...TransactionOption) *Transaction {
 	function := MustNewMoveFunctionTag(info.Address, AuxClobMarketModuleName, "create_market")
 	payload := NewEntryFunctionPayload(
 		function,
-		[]*MoveTypeTag{baseCoin, quoteCoin},
+		[]*MoveStructTag{baseCoin, quoteCoin},
 		[]*EntryFunctionArg{
 			EntryFunctionArg_Uint64(lotSize),
 			EntryFunctionArg_Uint64(tickSize),
@@ -336,11 +336,11 @@ func (info *AuxClientConfig) ClobMarket_CreateMarket(sender Address, baseCoin, q
 }
 
 // ClobMarket_CancelAll constructs a transaction to cancel all open orders on a given market.
-func (info *AuxClientConfig) ClobMarket_CancelAll(sender Address, baseCoin, quoteCoin *MoveTypeTag, options ...TransactionOption) *Transaction {
+func (info *AuxClientConfig) ClobMarket_CancelAll(sender Address, baseCoin, quoteCoin *MoveStructTag, options ...TransactionOption) *Transaction {
 	function := MustNewMoveFunctionTag(info.Address, AuxClobMarketModuleName, "cancel_all")
 	payload := NewEntryFunctionPayload(
 		function,
-		[]*MoveTypeTag{baseCoin, quoteCoin},
+		[]*MoveStructTag{baseCoin, quoteCoin},
 		[]*EntryFunctionArg{
 			EntryFunctionArg_Address(sender),
 		},
@@ -356,7 +356,7 @@ func (info *AuxClientConfig) ClobMarket_CancelAll(sender Address, baseCoin, quot
 }
 
 // ClobMarket_CancelOrder constructs a transaction to cancel an open orde on a given market.
-func (info *AuxClientConfig) ClobMarket_CancelOrder(sender Address, baseCoin, quoteCoin *MoveTypeTag, orderId bcs.Uint128, options ...TransactionOption) *Transaction {
+func (info *AuxClientConfig) ClobMarket_CancelOrder(sender Address, baseCoin, quoteCoin *MoveStructTag, orderId bcs.Uint128, options ...TransactionOption) *Transaction {
 	function := MustNewMoveFunctionTag(info.Address, AuxClobMarketModuleName, "cancel_order")
 	orderIdArg := &EntryFunctionArg{
 		Uint128: new(bcs.Uint128),
@@ -364,7 +364,7 @@ func (info *AuxClientConfig) ClobMarket_CancelOrder(sender Address, baseCoin, qu
 	*orderIdArg.Uint128 = orderId
 	payload := NewEntryFunctionPayload(
 		function,
-		[]*MoveTypeTag{baseCoin, quoteCoin},
+		[]*MoveStructTag{baseCoin, quoteCoin},
 		[]*EntryFunctionArg{
 			EntryFunctionArg_Address(sender), orderIdArg,
 		},
@@ -379,7 +379,7 @@ func (info *AuxClientConfig) ClobMarket_CancelOrder(sender Address, baseCoin, qu
 	return tx
 }
 
-func (client *AuxClient) GetClobMarket(ctx context.Context, baseCoin, quoteCoin *MoveTypeTag, ledgerVersion uint64) (*AuxClobMarket, error) {
+func (client *AuxClient) GetClobMarket(ctx context.Context, baseCoin, quoteCoin *MoveStructTag, ledgerVersion uint64) (*AuxClobMarket, error) {
 	marketType, err := client.config.MarketType(baseCoin, quoteCoin)
 	if err != nil {
 		return nil, err
@@ -387,7 +387,7 @@ func (client *AuxClient) GetClobMarket(ctx context.Context, baseCoin, quoteCoin 
 	return GetAccountResourceWithType[AuxClobMarket](ctx, client.client, client.config.Address, marketType, ledgerVersion)
 }
 
-func (client *AuxClient) ListLevel2(ctx context.Context, baseCoin, quoteCoin *MoveTypeTag, options ...TransactionOption) (*AuxClobMarket_Level2Event, error) {
+func (client *AuxClient) ListLevel2(ctx context.Context, baseCoin, quoteCoin *MoveStructTag, options ...TransactionOption) (*AuxClobMarket_Level2Event, error) {
 	tx := client.config.ClobMarket_LoadMarketIntoEvent(baseCoin, quoteCoin, options...)
 	if err := client.client.FillTransactionData(ctx, tx, false); err != nil {
 		return nil, err
@@ -420,7 +420,7 @@ func (client *AuxClient) ListLevel2(ctx context.Context, baseCoin, quoteCoin *Mo
 	return &level2, nil
 }
 
-func (client *AuxClient) ListAllOrders(ctx context.Context, baseCoin, quoteCoin *MoveTypeTag, options ...TransactionOption) (*AuxClobMarket_AllOrdersEvent, error) {
+func (client *AuxClient) ListAllOrders(ctx context.Context, baseCoin, quoteCoin *MoveStructTag, options ...TransactionOption) (*AuxClobMarket_AllOrdersEvent, error) {
 	tx := client.config.ClobMarket_LoadAllOrdersIntoEvent(baseCoin, quoteCoin, options...)
 	if err := client.client.FillTransactionData(ctx, tx, false); err != nil {
 		return nil, err

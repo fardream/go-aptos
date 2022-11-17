@@ -10,36 +10,106 @@ import (
 
 // EntryFunctionPayload
 type EntryFunctionPayload struct {
-	Function      *MoveFunctionTag      `json:"function"`
-	TypeArguments []*MoveTypeTag        `json:"type_arguments"`
-	Arguments     EntryFunctionArgSlice `json:"arguments"`
+	Function      *MoveFunctionTag    `json:"function"`
+	TypeArguments []*MoveTypeTag      `json:"type_arguments"`
+	Arguments     []*EntryFunctionArg `json:"arguments"`
 }
 
+// EntryFunctionArg is the argument to entry function.
+// This is kind of an enum, but on the wire actually
+// all bcs byte vectors.
+// This means the values are first bcs serialized to vector of bytes.
+// Then the vector of bytes are serialized.
 type EntryFunctionArg struct {
 	Bool    *bool
 	Uint8   *uint8
-	Uint64  *uint64
+	Uint64  *JsonUint64
 	Uint128 *bcs.Uint128
 	Address *Address
 	Signer  *struct{}
 	Vector  *[]byte
-	Struct  *MoveTypeTag
 }
 
-var _ bcs.Enum = (*EntryFunctionArg)(nil)
+var (
+	_ bcs.Marshaler    = (*EntryFunctionArg)(nil)
+	_ json.Marshaler   = (*EntryFunctionArg)(nil)
+	_ json.Unmarshaler = (*EntryFunctionArg)(nil)
+)
 
-func (m EntryFunctionArg) IsBcsEnum() {}
+func marshalWithByteLength[T any](v T) ([]byte, error) {
+	if firstBytes, err := bcs.Marshal(v); err != nil {
+		return nil, err
+	} else {
+		return bcs.Marshal(firstBytes)
+	}
+}
+
+// MarshalBCS customizes bcs Marshal for [EntryFunctionArg].
+// This method first bcs serialize the non-nil value, then
+// serialize the resulted byte vector (simply prepending the length with ULEB128 encoding).
+func (m EntryFunctionArg) MarshalBCS() ([]byte, error) {
+	switch {
+	case m.Bool != nil:
+		return marshalWithByteLength(m.Bool)
+	case m.Uint8 != nil:
+		return marshalWithByteLength(m.Uint8)
+	case m.Uint64 != nil:
+		return marshalWithByteLength(m.Uint64)
+	case m.Uint128 != nil:
+		return marshalWithByteLength(m.Uint128)
+	case m.Address != nil:
+		return marshalWithByteLength(m.Address)
+	case m.Vector != nil:
+		return bcs.Marshal(m.Vector)
+	default:
+		return nil, fmt.Errorf("unset arg")
+	}
+}
+
+// reset sets all values to nil.
+func (m *EntryFunctionArg) reset() {
+	m.Bool = nil
+	m.Uint8 = nil
+	m.Uint64 = nil
+	m.Uint128 = nil
+	m.Address = nil
+	m.Signer = nil
+	m.Vector = nil
+}
+
+func (m EntryFunctionArg) MarshalJSON() ([]byte, error) {
+	switch {
+	case m.Bool != nil:
+		return json.Marshal(*m.Bool)
+	case m.Address != nil:
+		return json.Marshal(*m.Address)
+	case m.Uint8 != nil:
+		return json.Marshal(*m.Uint8)
+	case m.Uint64 != nil:
+		return json.Marshal(*m.Uint64)
+	case m.Uint128 != nil:
+		return json.Marshal(*m.Uint128)
+	case m.Vector != nil:
+		return json.Marshal(*m.Vector)
+	}
+
+	return nil, fmt.Errorf("unsupported: %v", m)
+}
 
 // NewEntryFunctionPayload
 func NewEntryFunctionPayload(
 	functionName *MoveFunctionTag,
-	typeArguments []*MoveTypeTag,
+	typeArguments []*MoveStructTag,
 	arguments []*EntryFunctionArg,
 ) *TransactionPayload {
 	r := &EntryFunctionPayload{
-		Function:      functionName,
-		TypeArguments: typeArguments,
-		Arguments:     arguments,
+		Function: functionName,
+		TypeArguments: mapSlices(typeArguments, func(t *MoveStructTag) *MoveTypeTag {
+			return &MoveTypeTag{
+				Struct: t,
+			}
+		}),
+		Arguments: arguments,
 	}
 
 	if r.TypeArguments == nil {
@@ -68,14 +138,15 @@ func EntryFunctionArg_Uint8(v uint8) *EntryFunctionArg {
 // EntryFunctionArg_Uint64 is equivalent to uint64, or u64 in move.
 func EntryFunctionArg_Uint64(v uint64) *EntryFunctionArg {
 	r := &EntryFunctionArg{
-		Uint64: new(uint64),
+		Uint64: new(JsonUint64),
 	}
 
-	*r.Uint64 = v
+	*r.Uint64 = JsonUint64(v)
 
 	return r
 }
 
+// EntryFunctionArg_Uint128 creates a new [EntryFunctionArg] with Uint128 set from lo/hi [uint64].
 func EntryFunctionArg_Uint128(lo uint64, hi uint64) *EntryFunctionArg {
 	r := &EntryFunctionArg{
 		Uint128: new(bcs.Uint128),
@@ -117,9 +188,7 @@ func EntryFunctionArg_Address(v Address) *EntryFunctionArg {
 	return r
 }
 
-// EntryFunctionArgSlice
-//
-// Slices of [EntryFunctionArg] need special handling during serialization and deserialization.
+// UnmarshalJSON for [EntryFunctionArg]. json doesn't have type information, so the process uses a series of heuristics.
 //
 //   - deserializing response from rest api either in json or bcs is difficult without knowing the types of the elements before
 //     hand.
@@ -130,47 +199,37 @@ func EntryFunctionArg_Address(v Address) *EntryFunctionArg {
 //
 //   - during serialization, the element of entry function argument slice is prefixed with the length of the
 //     serialized bytes. For example, instead of serialize true to 01, serialize it to 0101.
-type EntryFunctionArgSlice []*EntryFunctionArg
-
-var _ json.Unmarshaler = (*EntryFunctionArgSlice)(nil)
-
-func (s *EntryFunctionArgSlice) UnmarshalJSON(data []byte) error {
-	var objects []json.RawMessage
-	if err := json.Unmarshal(data, &objects); err != nil {
-		return err
+func (s *EntryFunctionArg) UnmarshalJSON(data []byte) error {
+	var j JsonUint64
+	if err := j.UnmarshalJSON(data); err == nil {
+		s.reset()
+		s.Uint64 = new(JsonUint64)
+		*s.Uint64 = j
+		return nil
 	}
-
-	result := []*EntryFunctionArg{}
-
-	for _, msg := range objects {
-		var j JsonUint64
-		if err := j.UnmarshalJSON(msg); err == nil {
-			result = append(result, EntryFunctionArg_Uint64(uint64(j)))
-			continue
-		}
-		var b bool
-		if err := json.Unmarshal(msg, &b); err == nil {
-			result = append(result, EntryFunctionArg_Bool(b))
-			continue
-		}
-		var str string
-		if err := json.Unmarshal(msg, &str); err == nil {
-			if strings.HasPrefix(str, "0x") {
-				addr, err := ParseAddress(str)
-				if err == nil {
-					result = append(result, EntryFunctionArg_Address(addr))
-				}
-				continue
+	var b bool
+	if err := json.Unmarshal(data, &b); err == nil {
+		s.reset()
+		s.Bool = new(bool)
+		*s.Bool = b
+		return nil
+	}
+	var str string
+	if err := json.Unmarshal(data, &str); err == nil {
+		if strings.HasPrefix(str, "0x") {
+			addr, err := ParseAddress(str)
+			if err == nil {
+				s.reset()
+				s.Address = new(Address)
+				*s.Address = addr
+				return nil
 			}
-
-			result = append(result, EntryFunctionArg_String(str))
-			continue
 		}
-
-		return fmt.Errorf("failed to unmarshal %s", string(msg))
+		s.reset()
+		s.Vector = new([]byte)
+		*s.Vector = append(*s.Vector, []byte(str)...)
+		return nil
 	}
 
-	*s = result
-
-	return nil
+	return fmt.Errorf("failed to unmarshal %s", string(data))
 }

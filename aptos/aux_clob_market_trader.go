@@ -26,8 +26,8 @@ const (
 
 // AuxClobMarketTrader contains the market state, a client to aptos/aux,
 type AuxClobMarketTrader struct {
-	baseCoin  *MoveTypeTag
-	quoteCoin *MoveTypeTag
+	baseCoin  *MoveStructTag
+	quoteCoin *MoveStructTag
 
 	// OriginalState contains the state of the market when the AuxClobMarketTrader first start trading.
 	// This is useful to monitor the event queues to check if an order is filled or cancelled.
@@ -52,7 +52,7 @@ func (counter *AuxClobMarketEventCounter) FillFromAuxClobMarket(market *AuxClobM
 }
 
 // NewAuxClobMarketTrader creates a new trader.
-func NewAuxClobMarketTrader(ctx context.Context, auxClient *AuxClient, baseCoin, quoteCoin *MoveTypeTag) (*AuxClobMarketTrader, error) {
+func NewAuxClobMarketTrader(ctx context.Context, auxClient *AuxClient, baseCoin, quoteCoin *MoveStructTag) (*AuxClobMarketTrader, error) {
 	originalState, err := auxClient.GetClobMarket(ctx, baseCoin, quoteCoin, 0)
 	if err != nil {
 		return nil, err

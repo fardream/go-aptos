@@ -15,9 +15,9 @@ func ExampleClient_GetAccountResource() {
 	client := aptos.MustNewClient(aptos.Testnet, "")
 	// account resource is identified by a type.
 	// AptosCoin is type
-	aptosCoin, _ := aptos.NewMoveTypeTag(aptos.AptosStdAddress, "aptos_coin", "AptosCoin", nil)
+	aptosCoin, _ := aptos.NewMoveStructTag(aptos.AptosStdAddress, "aptos_coin", "AptosCoin", nil)
 	// The coin value of an account is stored in a coin store
-	aptosCoinStore, _ := aptos.NewMoveTypeTag(aptos.AptosStdAddress, "coin", "CoinStore", []*aptos.MoveTypeTag{aptosCoin})
+	aptosCoinStore, _ := aptos.NewMoveStructTag(aptos.AptosStdAddress, "coin", "CoinStore", []*aptos.MoveStructTag{aptosCoin})
 
 	// let's check the coin balance of our deployer
 	auxConfig, _ := aptos.GetAuxClientConfig(aptos.Testnet)

@@ -52,7 +52,7 @@ func ExampleClient_SubmitTransaction() {
 		ExpirationTimestampSecs: aptos.JsonUint64(time.Date(3000, 1, 1, 0, 0, 0, 0, time.UTC).Unix()),
 		Payload: aptos.NewEntryFunctionPayload(
 			aptos.MustNewMoveFunctionTag(auxConfig.Address, "fake_coin", "mint"),
-			[]*aptos.MoveTypeTag{aptos.MustNewMoveTypeTag(auxConfig.Address, "fake_coin", "USDC", nil)},
+			[]*aptos.MoveStructTag{aptos.MustNewMoveStructTag(auxConfig.Address, "fake_coin", "USDC", nil)},
 			[]*aptos.EntryFunctionArg{aptos.EntryFunctionArg_Uint64(1000000000000)}),
 	}
 

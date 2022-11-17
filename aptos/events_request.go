@@ -39,9 +39,9 @@ type GetEventsByEventHandlerRequest struct {
 	Limit *JsonUint64 `url:"limit,omitempty"`
 	Start *JsonUint64 `url:"start,omitempty"`
 
-	Address      Address      `url:"-"`
-	EventHandler *MoveTypeTag `url:"-"`
-	FieldName    string       `url:"-"`
+	Address      Address        `url:"-"`
+	EventHandler *MoveStructTag `url:"-"`
+	FieldName    string         `url:"-"`
 }
 
 func (request *GetEventsByEventHandlerRequest) PathSegments() ([]string, error) {

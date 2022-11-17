@@ -29,13 +29,13 @@ const AuxStable2PoolModuleName = "stable_2pool"
 // AuxRouter2PoolModuleName aux::router_2pool
 const AuxRouter2PoolModuleName = "router_2pool"
 
-// Stable2PoolType returns the move type tag ([MoveTypeTag]) for a stable 2 pool
-func (info *AuxClientConfig) Stable2PoolType(coin0, coin1 *MoveTypeTag) (*MoveTypeTag, error) {
-	return NewMoveTypeTag(
+// Stable2PoolType returns the move struct tag ([MoveStructTag]) for a stable 2 pool
+func (info *AuxClientConfig) Stable2PoolType(coin0, coin1 *MoveStructTag) (*MoveStructTag, error) {
+	return NewMoveStructTag(
 		info.Address,
 		AuxStable2PoolModuleName,
 		"Pool",
-		[]*MoveTypeTag{
+		[]*MoveStructTag{
 			coin0,
 			coin1,
 		})
@@ -44,8 +44,8 @@ func (info *AuxClientConfig) Stable2PoolType(coin0, coin1 *MoveTypeTag) (*MoveTy
 // Stable2Pool_CreatePool construct the transaction to create a new 2pool
 func (info *AuxClientConfig) Stable2Pool_CreatePool(
 	sender Address,
-	coin0 *MoveTypeTag,
-	coin1 *MoveTypeTag,
+	coin0 *MoveStructTag,
+	coin1 *MoveStructTag,
 	feeNumerator uint64,
 	amp uint64,
 	options ...TransactionOption,
@@ -54,7 +54,7 @@ func (info *AuxClientConfig) Stable2Pool_CreatePool(
 
 	payload := NewEntryFunctionPayload(
 		function,
-		[]*MoveTypeTag{
+		[]*MoveStructTag{
 			coin0,
 			coin1,
 		},
@@ -78,9 +78,9 @@ func (info *AuxClientConfig) Stable2Pool_CreatePool(
 // Router2Pool_AddLiquidity constructs the transaction to add liquidity to a pool
 func (info *AuxClientConfig) Router2Pool_AddLiquidity(
 	sender Address,
-	coin0 *MoveTypeTag,
+	coin0 *MoveStructTag,
 	amount0 uint64,
-	coin1 *MoveTypeTag,
+	coin1 *MoveStructTag,
 	amount1 uint64,
 	minLpAmount uint64,
 	options ...TransactionOption,
@@ -89,7 +89,7 @@ func (info *AuxClientConfig) Router2Pool_AddLiquidity(
 
 	payload := NewEntryFunctionPayload(
 		function,
-		[]*MoveTypeTag{
+		[]*MoveStructTag{
 			coin0,
 			coin1,
 		},
@@ -115,9 +115,9 @@ func (info *AuxClientConfig) Router2Pool_AddLiquidity(
 // by specifying the coin amount to withdraw.
 func (info *AuxClientConfig) Router2Pool_RemoveLiquidityForCoin(
 	sender Address,
-	coin0 *MoveTypeTag,
+	coin0 *MoveStructTag,
 	amount0ToWithdraw uint64,
-	coin1 *MoveTypeTag,
+	coin1 *MoveStructTag,
 	amount1ToWithdraw uint64,
 	maxLpAmount uint64,
 	options ...TransactionOption,
@@ -126,7 +126,7 @@ func (info *AuxClientConfig) Router2Pool_RemoveLiquidityForCoin(
 
 	payload := NewEntryFunctionPayload(
 		function,
-		[]*MoveTypeTag{
+		[]*MoveStructTag{
 			coin0,
 			coin1,
 		},
@@ -152,8 +152,8 @@ func (info *AuxClientConfig) Router2Pool_RemoveLiquidityForCoin(
 // by specifying the amount of lp coins to burn.
 func (info *AuxClientConfig) Router2Pool_RemoveLiquidity(
 	sender Address,
-	coin0 *MoveTypeTag,
-	coin1 *MoveTypeTag,
+	coin0 *MoveStructTag,
+	coin1 *MoveStructTag,
 	lpAmount uint64,
 	options ...TransactionOption,
 ) *Transaction {
@@ -161,7 +161,7 @@ func (info *AuxClientConfig) Router2Pool_RemoveLiquidity(
 
 	payload := NewEntryFunctionPayload(
 		function,
-		[]*MoveTypeTag{
+		[]*MoveStructTag{
 			coin0,
 			coin1,
 		},
@@ -185,9 +185,9 @@ func (info *AuxClientConfig) Router2Pool_RemoveLiquidity(
 // by specifying the input amount of coins to swap.
 func (info *AuxClientConfig) Router2Pool_SwapExactCoinForCoin(
 	sender Address,
-	coin0 *MoveTypeTag,
+	coin0 *MoveStructTag,
 	amount0 uint64,
-	coin1 *MoveTypeTag,
+	coin1 *MoveStructTag,
 	amount1 uint64,
 	outCoinIndex int,
 	minQuantityOut uint64,
@@ -197,7 +197,7 @@ func (info *AuxClientConfig) Router2Pool_SwapExactCoinForCoin(
 
 	payload := NewEntryFunctionPayload(
 		function,
-		[]*MoveTypeTag{
+		[]*MoveStructTag{
 			coin0,
 			coin1,
 		},
@@ -224,9 +224,9 @@ func (info *AuxClientConfig) Router2Pool_SwapExactCoinForCoin(
 // by specifying the input amount of coins to swap.
 func (info *AuxClientConfig) Router2Pool_SwapCoinForExactCoin(
 	sender Address,
-	coin0 *MoveTypeTag,
+	coin0 *MoveStructTag,
 	requestAmount0 uint64,
-	coin1 *MoveTypeTag,
+	coin1 *MoveStructTag,
 	requestAmount1 uint64,
 	inCoinIndex int,
 	maxQuantityIn uint64,
@@ -236,7 +236,7 @@ func (info *AuxClientConfig) Router2Pool_SwapCoinForExactCoin(
 
 	payload := NewEntryFunctionPayload(
 		function,
-		[]*MoveTypeTag{
+		[]*MoveStructTag{
 			coin0,
 			coin1,
 		},

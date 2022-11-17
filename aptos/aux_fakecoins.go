@@ -35,12 +35,12 @@ var AuxAllFakeCoins []AuxFakeCoin = []AuxFakeCoin{
 
 // GetAuxFakeCoinType returns the fake coin type. Note, this is actually not a type of coin as defined by aptos framework.
 // Use [GetAuxFakeCoinCoinType] to get the coin type.
-func GetAuxFakeCoinType(moduleAddress Address, fakeCoin AuxFakeCoin) (*MoveTypeTag, error) {
+func GetAuxFakeCoinType(moduleAddress Address, fakeCoin AuxFakeCoin) (*MoveStructTag, error) {
 	if fakeCoin >= AuxFakeCoin(len(_AuxFakeCoin_index)-1) {
 		return nil, fmt.Errorf("unknown fake coin: %d", int(fakeCoin))
 	}
 
-	return NewMoveTypeTag(
+	return NewMoveStructTag(
 		moduleAddress,
 		AuxFakeCoinModuleName,
 		fakeCoin.String(),
@@ -48,16 +48,16 @@ func GetAuxFakeCoinType(moduleAddress Address, fakeCoin AuxFakeCoin) (*MoveTypeT
 }
 
 // GetAuxFakeCoinCoinType returns the fake coin **coin** type - **this is a coin as defined by the aptos framework.**
-func GetAuxFakeCoinCoinType(moduleAddress Address, fakeCoin AuxFakeCoin) (*MoveTypeTag, error) {
+func GetAuxFakeCoinCoinType(moduleAddress Address, fakeCoin AuxFakeCoin) (*MoveStructTag, error) {
 	coinType, err := GetAuxFakeCoinType(moduleAddress, fakeCoin)
 	if err != nil {
 		return nil, err
 	}
-	return NewMoveTypeTag(
+	return NewMoveStructTag(
 		moduleAddress,
 		AuxFakeCoinModuleName,
 		"FakeCoin",
-		[]*MoveTypeTag{coinType},
+		[]*MoveStructTag{coinType},
 	)
 }
 
@@ -106,7 +106,7 @@ func (info *AuxClientConfig) FakeCoin_RegisterAndMint(sender Address, fakeCoin A
 	tx := &Transaction{
 		Payload: NewEntryFunctionPayload(
 			function,
-			[]*MoveTypeTag{
+			[]*MoveStructTag{
 				must(GetAuxFakeCoinType(info.Address, fakeCoin)),
 			},
 			[]*EntryFunctionArg{
@@ -128,7 +128,7 @@ func (info *AuxClientConfig) FakeCoin_Register(sender Address, fakeCoin AuxFakeC
 	tx := &Transaction{
 		Payload: NewEntryFunctionPayload(
 			function,
-			[]*MoveTypeTag{
+			[]*MoveStructTag{
 				must(GetAuxFakeCoinType(info.Address, fakeCoin)),
 			},
 			nil,
@@ -149,7 +149,7 @@ func (info *AuxClientConfig) FakeCoin_Mint(sender Address, fakeCoin AuxFakeCoin,
 	tx := &Transaction{
 		Payload: NewEntryFunctionPayload(
 			function,
-			[]*MoveTypeTag{
+			[]*MoveStructTag{
 				must(GetAuxFakeCoinType(info.Address, fakeCoin)),
 			},
 			[]*EntryFunctionArg{
@@ -171,7 +171,7 @@ func (info *AuxClientConfig) FakeCoin_Burn(sender Address, fakeCoin AuxFakeCoin,
 	tx := &Transaction{
 		Payload: NewEntryFunctionPayload(
 			function,
-			[]*MoveTypeTag{
+			[]*MoveStructTag{
 				must(GetAuxFakeCoinType(info.Address, fakeCoin)),
 			},
 			[]*EntryFunctionArg{

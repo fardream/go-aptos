@@ -5,7 +5,7 @@ import (
 )
 
 // AptosCoin is the type for aptos coin
-var AptosCoin = MoveTypeTag{
+var AptosCoin = MoveStructTag{
 	MoveModuleTag: MoveModuleTag{
 		Address: AptosStdAddress,
 		Module:  "aptos_coin",
@@ -14,15 +14,17 @@ var AptosCoin = MoveTypeTag{
 }
 
 // GetCoinStoreType returns the 0x1::coin::CoinStore<T>
-func GetCoinStoreType(coin *MoveTypeTag) *MoveTypeTag {
-	return &MoveTypeTag{
+func GetCoinStoreType(coin *MoveStructTag) *MoveStructTag {
+	return &MoveStructTag{
 		MoveModuleTag: MoveModuleTag{
 			Address: AptosStdAddress,
 			Module:  "coin",
 		},
 		Name: "CoinStore",
 
-		GenericTypeParameters: []*MoveTypeTag{coin},
+		GenericTypeParameters: []*MoveTypeTag{
+			{Struct: coin},
+		},
 	}
 }
 
@@ -40,7 +42,7 @@ type CoinStore struct {
 }
 
 // GetCoinBalance
-func (client *Client) GetCoinBalance(ctx context.Context, address Address, coinType *MoveTypeTag) (uint64, error) {
+func (client *Client) GetCoinBalance(ctx context.Context, address Address, coinType *MoveStructTag) (uint64, error) {
 	coinStore, err := GetAccountResourceWithType[CoinStore](ctx, client, address, GetCoinStoreType(coinType), 0)
 	if err != nil {
 		return 0, err
