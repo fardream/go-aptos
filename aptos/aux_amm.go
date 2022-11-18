@@ -153,3 +153,28 @@ func (info *AuxClientConfig) Amm_AddLiquidity(sender Address, coinX *MoveStructT
 
 	return tx
 }
+
+// Amm_RemoveLiquidity removes liquidity from amm.
+// See contract [here]
+//
+// [here]: https://github.com/aux-exchange/aux-exchange/blob/v1.0.4/aptos/contract/aux/sources/amm.move#L425-L438
+func (info *AuxClientConfig) Amm_RemoveLiquidity(sender Address, coinX, coinY *MoveStructTag, amountLp uint64, options ...TransactionOption) *Transaction {
+	function := MustNewMoveFunctionTag(info.Address, AuxAmmModuleName, "remove_liquidity")
+
+	payload := NewEntryFunctionPayload(function,
+		[]*MoveStructTag{coinX, coinY},
+		[]*EntryFunctionArg{
+			EntryFunctionArg_Uint64(amountLp),
+		},
+	)
+
+	tx := &Transaction{
+		Payload: payload,
+	}
+
+	ApplyTransactionOptions(tx, options...)
+
+	tx.Sender = sender
+
+	return tx
+}
