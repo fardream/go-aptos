@@ -28,6 +28,7 @@ func GetRootCmd() *cobra.Command {
 		GetMintFakeCoinCmd(),
 		GetAmmAddLiquidityCmd(),
 		GetAmmSwapCmd(),
+		GetAmmRemoveLiquidityCmd(),
 	)
 
 	return cmd
