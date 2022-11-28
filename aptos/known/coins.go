@@ -6,20 +6,27 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 
 	"github.com/fardream/go-aptos/aptos"
 )
 
 //go:embed coins.json
-var data []byte
+var coinsJson []byte
 
 // TokenType
 type TokenType struct {
 	Type *aptos.MoveStructTag `json:"type"`
 }
 
-// HippoCoinRegistryEntry is the information contained in the hippo coin registry here
-// https://github.com/hippospace/aptos-coin-list/blob/main/typescript/src/defaultList.mainnet.json
+// HippoCoinRegistryUrl is the default url for mainnet coins
+const HippoCoinRegistryUrl = "https://raw.githubusercontent.com/hippospace/aptos-coin-list/main/typescript/src/defaultList.mainnet.json"
+
+// HippoCoinRegistryEntry is the information contained in the hippo coin registry for mainnet, and it is in Hippo's github [repo].
+// It should come from [HippoCoinRegistryUrl].
+//
+// [repo]: https://github.com/hippospace/aptos-coin-list/blob/main/typescript/src/defaultList.mainnet.json
 type HippoCoinRegistryEntry struct {
 	Name           string    `json:"name"`
 	Symbol         string    `json:"symbol"`
@@ -92,12 +99,40 @@ func generateFakeCoins(address aptos.Address) []*HippoCoinRegistryEntry {
 	return result
 }
 
+// ReloadHippoCoinRegistry reloads the data from hippo registry for mainnet.
+// Can use [HippoCoinRegistryUrl] for the url.
+func ReloadHippoCoinRegistry(url string) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return
+	}
+
+	coinsJson, err = io.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+
+	var hippoCoinList []*HippoCoinRegistryEntry
+	err = json.Unmarshal(coinsJson, &hippoCoinList)
+	if err != nil {
+		return
+	}
+
+	addCoins(&coinByNetworkByTypeName, aptos.Mainnet, hippoCoinList, func(h *HippoCoinRegistryEntry) string {
+		return h.TokenType.Type.String()
+	})
+	addCoins(&coinByNetworkBySymbol, aptos.Mainnet, hippoCoinList, func(h *HippoCoinRegistryEntry) string {
+		return h.Symbol
+	})
+}
+
 func init() {
 	coinByNetworkByTypeName = make(map[aptos.Network]*coinMap)
 	coinByNetworkBySymbol = make(map[aptos.Network]*coinMap)
 
 	var hippoCoinList []*HippoCoinRegistryEntry
-	err := json.Unmarshal(data, &hippoCoinList)
+	err := json.Unmarshal(coinsJson, &hippoCoinList)
 	if err != nil {
 		panic(err)
 	}
