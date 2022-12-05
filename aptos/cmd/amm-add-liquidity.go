@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"math"
 	"os"
 
 	"github.com/davecgh/go-spew/spew"
@@ -31,7 +30,7 @@ To see a list of all coins that are known, check "ls-known" command.
 
 	var amountX uint64
 	var amountY uint64
-	var maxSlippageBps uint64 = math.MaxUint64
+	var maxSlippageBps uint64 = 10000
 
 	coinX := ""
 	coinY := ""
