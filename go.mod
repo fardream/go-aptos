@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/davecgh/go-spew v1.1.1
-	github.com/fardream/go-bcs v0.1.1
+	github.com/fardream/go-bcs v0.2.0
 	github.com/goccy/go-yaml v1.9.7
 	github.com/google/go-cmp v0.5.9
 	github.com/google/go-querystring v1.1.0
