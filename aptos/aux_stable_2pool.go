@@ -3,7 +3,11 @@
 
 package aptos
 
-import "github.com/fardream/go-bcs/bcs"
+import (
+	"context"
+
+	"github.com/fardream/go-bcs/bcs"
+)
 
 // AuxStable2Pool is a pool with 2 coins that priced at parity.
 type AuxStable2Pool struct {
@@ -257,4 +261,14 @@ func (info *AuxClientConfig) Router2Pool_SwapCoinForExactCoin(
 	tx.Sender = sender
 
 	return tx
+}
+
+// GetStable2Pool returns the 2pool if it exists. Note the order of the coin matters
+func (client *AuxClient) GetStable2Pool(ctx context.Context, coin0, coin1 *MoveStructTag, ledgerVersion uint64) (*AuxStable2Pool, error) {
+	stable2PoolType, err := client.config.Stable2PoolType(coin0, coin1)
+	if err != nil {
+		return nil, err
+	}
+
+	return GetAccountResourceWithType[AuxStable2Pool](ctx, client.client, client.config.Address, stable2PoolType, ledgerVersion)
 }
