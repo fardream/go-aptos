@@ -50,3 +50,27 @@ func (client *Client) GetCoinBalance(ctx context.Context, address Address, coinT
 
 	return uint64(coinStore.Coin.Value), nil
 }
+
+// CoinInfo, this is golang equivalentg of 0x1::coin::CoinInfo.
+type CoinInfo struct {
+	Decimals uint8  `json:"decimals"`
+	Symbol   string `json:"symbol"`
+	Name     string `json:"name"`
+}
+
+// GetCoinInfoType returns the CoinInfo<coinType> for coin.
+func GetCoinInfoType(coinType *MoveStructTag) *MoveStructTag {
+	return &MoveStructTag{
+		MoveModuleTag: MoveModuleTag{
+			Address: AptosStdAddress,
+			Module:  "coin",
+		},
+		GenericTypeParameters: []*MoveTypeTag{{Struct: coinType}},
+		Name:                  "CoinInfo",
+	}
+}
+
+// GetCoinInfo retrieves [CoinInfo]
+func (client *Client) GetCoinInfo(ctx context.Context, coinType *MoveStructTag) (*CoinInfo, error) {
+	return GetAccountResourceWithType[CoinInfo](ctx, client, coinType.Address, GetCoinInfoType(coinType), 0)
+}

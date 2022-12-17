@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	identifierRegex  = regexp.MustCompile("^[A-z_][A-z0-9_]+$")
+	identifierRegex  = regexp.MustCompile("^[A-z_][A-z0-9_]*$")
 	whiteSpaceRegex  = regexp.MustCompile(`\s+`)
 	genericTypeRegex = regexp.MustCompile(`^([A-z0-9_:]+)+<(.+)>$`)
 )
