@@ -125,3 +125,18 @@ var _ bcs.Marshaler = (*Address)(nil)
 func (a Address) MarshalBCS() ([]byte, error) {
 	return a[:], nil
 }
+
+// IsAddressEqual checks if two [Address] are the same.
+func IsAddressEqual(r *Address, l *Address) bool {
+	if r != nil && l != nil {
+		for i := 0; i < AddressLength; i++ {
+			if r[i] != l[i] {
+				return false
+			}
+		}
+
+		return true
+	}
+
+	return false
+}

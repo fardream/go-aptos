@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/google/go-cmp/cmp"
 	"golang.org/x/crypto/sha3"
 )
 
@@ -132,7 +131,7 @@ var (
 )
 
 func (account *LocalAccount) Sign(tx *Transaction) (*SingleSignature, error) {
-	if !cmp.Equal(tx.Sender, account.Address) {
+	if !IsAddressEqual(&tx.Sender, &account.Address) {
 		return nil, fmt.Errorf("can only sign for self")
 	}
 
@@ -140,7 +139,7 @@ func (account *LocalAccount) Sign(tx *Transaction) (*SingleSignature, error) {
 }
 
 func (account *LocalAccount) SignForSimulation(tx *Transaction) (*SingleSignature, error) {
-	if !cmp.Equal(tx.Sender, account.Address) {
+	if !IsAddressEqual(&tx.Sender, &account.Address) {
 		return nil, fmt.Errorf("can only sign for self")
 	}
 
