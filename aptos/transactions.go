@@ -33,7 +33,9 @@ type Transaction struct {
 var rawTransactionPrefix []byte = sha3_Sum256Slice([]byte("APTOS::RawTransaction"))
 
 // ToBCS get the signing bytes of the transaction.
-// This is calling [EncodeTransaction] under the hood.
+// This is calling [EncodeTransaction] under the hood - this is different from directly [bcs.Marshal] the transaction.
+//
+// Deprecated: Use EncodeTransaction
 func (tx *Transaction) ToBCS() []byte {
 	return EncodeTransaction(tx)
 }
@@ -53,7 +55,7 @@ func sha3_Sum256Slice(data []byte) []byte {
 //
 //   - generate sha3_256 of "APTOS::RawTransaction"
 //
-// Then bcs serialize in the following order:
+// Then [bcs.Marshal]  in the following order:
 //
 //   - sender
 //   - sequence_number
@@ -62,8 +64,6 @@ func sha3_Sum256Slice(data []byte) []byte {
 //   - gas_unit_price
 //   - expiration_timestamp_secs
 //   - chain_id
-//
-// for entry function payload, see [EntryFunctionPayload.ToBCS].
 //
 // [doc on aptos.dev]: https://aptos.dev/guides/creating-a-signed-transaction#signing-message
 // [implementation in typescript]: https://github.com/aptos-labs/aptos-core/blob/ef6d3f45dfaeafcd76aa189b855d37a408a8e85e/ecosystem/typescript/sdk/src/transaction_builder/builder.ts#L69-L89

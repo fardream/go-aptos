@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/fardream/go-bcs/bcs"
-	"github.com/google/go-cmp/cmp"
 )
 
 // AuxCritbit is a critbit tree, used to store order books.
@@ -142,7 +141,7 @@ func FilterAuxClobMarketOrderEvent(events []*RawEvent, moduleAddress Address, ig
 		ev := new(AuxClobMarketOrderEvent)
 		switch {
 		case rawEvent.Type.Module != AuxClobMarketModuleName:
-		case !ignoreAddress && !cmp.Equal(moduleAddress, rawEvent.Type.Address):
+		case !ignoreAddress && !IsAddressEqual(&moduleAddress, &rawEvent.Type.Address):
 		case rawEvent.Type.Name == "OrderPlacedEvent":
 			placedEvent := new(AuxClobMarket_OrderPlacedEvent)
 			if err := json.Unmarshal(*rawEvent.Data, placedEvent); err != nil {

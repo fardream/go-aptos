@@ -41,10 +41,14 @@ func (i JsonUint64) MarshalJSON() ([]byte, error) {
 	return json.Marshal(strconv.FormatUint(uint64(i), 10))
 }
 
+// MarshalBCS marshals the uint64 to bcs bytes.
 func (i JsonUint64) MarshalBCS() ([]byte, error) {
 	return bcs.Marshal(uint64(i))
 }
 
+// ToBCS calls bcs.Marshal and returns the bytes, ignoring the error if there is any.
+//
+// Deprecated: Use [JsonUint64.MarshalBCS] directly
 func (i JsonUint64) ToBCS() []byte {
 	r, _ := bcs.Marshal(uint64(i))
 

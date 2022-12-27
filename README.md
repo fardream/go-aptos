@@ -24,7 +24,7 @@ go install github/fardream/go-aptos/aptos/cmd/aptos-aux@latest
 
 ## Quick Tour
 
-The code stems from the [axu dex](https://aux.exchange), where we look for a lightweight golang library to interact with the chain. There is no full-fledged support for BCS yet.
+The code stems from the [aux dex](https://aux.exchange), where we look for a lightweight golang library to interact with the chain. BCS support is provided in [go-bcs](https://pkg.go.dev/github.com/fardream/go-bcs/bcs)
 
 Aptos right now only supports rest api, without a websocket or streaming api.
 
@@ -36,9 +36,17 @@ Aptos has multiple networks:
 - Localnet, chain id 4.
 - Customnet
 
+### Account, Keys, and Address
+
+Aptos uses ed25519 for signing, and support Bitcoin style mnemonic Words. Right now only [`LocalAccount`](https://pkg.go.dev/github.com/fardream/go-aptos@main/aptos#LocalAccount) with single private key is supported. It can be generated from either [ed25519 private key](https://pkg.go.dev/github.com/fardream/go-aptos@main/aptos#NewLocalAccountFromPrivateKey), or from [mnemonic words](https://pkg.go.dev/github.com/fardream/go-aptos@main/aptos#NewLocalAccountFromMnemonic).
+
+[Resource account address calculation](https://pkg.go.dev/github.com/fardream/go-aptos@main/aptos#CalculateResourceAddress) is also supported.
+
 ### Rest Api
 
-All interactions are handled through `aptos.Client`. A network must be specified.
+All interactions are handled through `aptos.Client`. A network must be specified - the default endpoint for that network will be used if the URL is left to be empty string.
+
+For the supported methods, see the full [api](https://fullnode.mainnet.aptoslabs.com/v1/spec#/) documentation of aptos fullnode.
 
 ```go
 client, err := new aptos.NewClient(aptos.Devnet, "..<url>..")
@@ -49,13 +57,16 @@ All methods that interact with the rest endpoint will take a `context.Context` p
 ```go
 // create a new context with 5 minutes timeout
 ctx, cancel := context.WithTimeout(context.Background(), time.Minute * 5)
-// now the request will wait for 5 minutes before timing out.
+defer cancel()
+// now the request will wait for 5 minutes before timing out or when cancel is called.
 resp, err := client.GetAccountResources(ctx, &aptos.GetAccountResourcesRequest{Address: aptos.MustParseAddress("0x1")})
 ```
 
 A detailed example can be found [here](https://pkg.go.dev/github.com/fardream/go-aptos@main/aptos#example-Client.GetAccountResources)
 
 ### Submit/Simulate Transaction
+
+The transactions can be encoded locally with [`EncodeTransaction`](https://pkg.go.dev/github.com/fardream/go-aptos@main/aptos#EncodeTransaction) function. **Note**: techanically speaking, the transaction hash can also be backed out locally, however, right now the method doesn't match the one returned from the chain.
 
 Right now only entry function payload (more on what is ["entry function"](https://aptos.dev/guides/system-integrators-guide/#types-of-transactions)) and single ed25519 signature is supported.
 
@@ -76,7 +87,7 @@ client.SubmitTransaction(ctx, &aptos.SubmitTransactionRequest{Transaction: tx, S
 
 A detailed example can be found here [here](https://pkg.go.dev/github.com/fardream/go-aptos@main/aptos#example-Client.SubmitTransaction)
 
-The sign, submit transaction, and wait for transaction completion can be done in one method call [SignSubmitTransactionWait](https://pkg.go.dev/github.com/fardream/go-aptos@main/aptos#Client.SignSubmitTransactionWait).
+Signing, submitting transaction, and waiting for transaction completion can be done in one method call [SignSubmitTransactionWait](https://pkg.go.dev/github.com/fardream/go-aptos@main/aptos#Client.SignSubmitTransactionWait).
 
 ### Aux Client
 
