@@ -2,8 +2,10 @@ package aptos
 
 import "net/http"
 
-// AptosRequest
+// AptosRequest defines a helper interface for quickly construct aptos request.
+// The URL query string is generated from [query.Values], and all the fields that should not be included in the query string should be ignored with tag url:"-".
 type AptosRequest interface {
+	// PathSegments doesn't include the query string.
 	PathSegments() ([]string, error)
 	Body() ([]byte, error)
 	HttpMethod() string
