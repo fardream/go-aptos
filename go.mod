@@ -14,7 +14,7 @@ require (
 	github.com/spf13/cobra v1.7.0
 	github.com/tyler-smith/go-bip39 v1.1.0
 	golang.org/x/crypto v0.9.0
-	golang.org/x/tools v0.9.1
+	golang.org/x/tools v0.9.3
 	mvdan.cc/gofumpt v0.5.0
 )
 
