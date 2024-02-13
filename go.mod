@@ -14,7 +14,7 @@ require (
 	github.com/spf13/cobra v1.8.0
 	github.com/tyler-smith/go-bip39 v1.1.0
 	golang.org/x/crypto v0.19.0
-	golang.org/x/tools v0.17.0
+	golang.org/x/tools v0.18.0
 	mvdan.cc/gofumpt v0.6.0
 )
 
@@ -25,8 +25,8 @@ require (
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	golang.org/x/mod v0.14.0 // indirect
-	golang.org/x/net v0.20.0 // indirect
+	golang.org/x/mod v0.15.0 // indirect
+	golang.org/x/net v0.21.0 // indirect
 	golang.org/x/sys v0.17.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 )
