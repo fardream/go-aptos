@@ -1,8 +1,8 @@
 github.com/cpuguy83/go-md2man/v2 v2.0.3/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/fardream/go-bcs v0.4.0 h1:J2yQZRAnkg/yMgP9MPf/qj9jJfD6w/LCMdWtC9Cbn08=
-github.com/fardream/go-bcs v0.4.0/go.mod h1:UsoxhIoe2GsVexX0s5NDLIChxeb/JUbjw7IWzzgF3Xk=
+github.com/fardream/go-bcs v0.5.0 h1:rFEu2AR89G0IgbEaS/SeX6vlssxZmF7nFkY3Z1ClnG0=
+github.com/fardream/go-bcs v0.5.0/go.mod h1:UsoxhIoe2GsVexX0s5NDLIChxeb/JUbjw7IWzzgF3Xk=
 github.com/fatih/color v1.15.0 h1:kOqh6YHBtK8aywxGerMG2Eq3H6Qgoqeo13Bk2Mv/nBs=
 github.com/fatih/color v1.15.0/go.mod h1:0h5ZqXfHYED7Bhv2ZJamyIOUej9KtShiJESRwBDUSsw=
 github.com/frankban/quicktest v1.14.6 h1:7Xjx+VpznH+oBnejlPUj8oUpdxnVs4f8XU8WnHkI4W8=
