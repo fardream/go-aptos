@@ -11,7 +11,7 @@ require (
 	github.com/gorilla/websocket v1.5.2
 	github.com/mattn/go-isatty v0.0.20
 	github.com/olekukonko/tablewriter v0.0.5
-	github.com/spf13/cobra v1.8.0
+	github.com/spf13/cobra v1.8.1
 	github.com/tyler-smith/go-bip39 v1.1.0
 	golang.org/x/crypto v0.24.0
 	golang.org/x/tools v0.22.0
